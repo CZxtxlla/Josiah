@@ -21,4 +21,7 @@ void printBitboard(Bitboard board);
 #define PopBit(board, square) ((board) &= ~(1ULL << (square)))
 #define GetBit(board, square) ((board) & (1ULL << (square)))
 
+#define Rank(square) (square / 8)
+#define File(square) (square % 8)
+
 #endif

@@ -102,3 +102,47 @@ Bitboard getKnightAttacks(int square) {
 Bitboard getKingAttacks(int square) {
     return KING_ATTACKS[square];
 }
+
+void initBishopMasks() {
+    for (int sq = 0; sq < 64; sq++) {
+        Bitboard attacks = 0;
+
+        int rank = Rank(sq);
+        int file = File(sq);
+
+        for (int r = rank + 1, f = file + 1; r < 7, f < 7; r++, f++) {
+            SetBit(attacks, r * 8 + f);
+        }
+        for (int r = rank + 1, f = file - 1; r < 7, f > 0; r++, f--) {
+            SetBit(attacks, r * 8 + f);
+        }
+        for (int r = rank - 1, f = file + 1; r > 0, f < 7; r--, f++) {
+            SetBit(attacks, r * 8 + f);
+        }
+        for (int r = rank - 1, f = file - 1; r > 0, f > 0; r--, f--) {
+            SetBit(attacks, r * 8 + f);
+        }
+    }
+}
+
+void initRookMasks() {
+    for (int sq = 0; sq < 64; sq++) {
+        Bitboard attacks = 0;
+
+        int rank = Rank(sq);
+        int file = File(sq);
+
+        for (int r = rank + 1; r < 7; r++) {
+            SetBit(attacks, r * 8 + file);
+        }
+        for (int r = rank - 1; r > 0; r--) {
+            SetBit(attacks, r * 8 + file);
+        }
+        for (int f = file + 1; f < 7; f++) {
+            SetBit(attacks, rank * 8 + f);
+        }
+        for (int f = file - 1; f > 0; f--) {
+            SetBit(attacks, rank * 8 + f);
+        }
+    }
+}

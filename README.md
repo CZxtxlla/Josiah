@@ -7,4 +7,9 @@ Now, instead of relying on llms I will be taking inspiration from other engines 
 
 Additionally, from the start I will be optimizing this for my ryzen 5000 series processor, which means I will be using AVX2 and no AVX-512 (I might add support for that later but it's not a priority).
 
-My main references are the engines Ethereal and Berserk.
+My main references are the engines Ethereal and Berserk. (My movegen code is heavily inspired/sourced from Berserk, as well as the nice video series Berserk was based upon:
+https://www.youtube.com/channel/UCB9-prLkPwgvlKKqDgXhsMQ/videos)
+
+Resources I have used:
+https://analog-hors.github.io/site/magic-bitboards/
+Chess Programming Wikis
