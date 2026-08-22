@@ -56,9 +56,4 @@ enum {
     A8, B8, C8, D8, E8, F8, G8, H8,
 };
 
-
-#define SetBit(board, square) ((board) |= (1ULL << (square)))
-#define PopBit(board, square) ((board) &= ~(1ULL << (square)))
-#define GetBit(board, square) ((board) & (1ULL << (square)))
-
 #endif 
