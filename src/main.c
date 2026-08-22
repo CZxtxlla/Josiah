@@ -5,10 +5,12 @@
 
 int main() {
     initPawnAttacks();
+    initKnightAttacks();
+    initKingAttacks();
 
-    printBitboard(PAWN_ATTACKS[WHITE][A1]);
-    printBitboard(PAWN_ATTACKS[BLACK][D4]);
-    printBitboard(PAWN_ATTACKS[WHITE][D4]);
+    for (int i = 0; i < 64; i++) {
+        printBitboard(PAWN_ATTACKS[WHITE][i]);
+    }
 
 
     return 0;
