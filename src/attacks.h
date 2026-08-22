@@ -6,6 +6,8 @@
 extern Bitboard PAWN_ATTACKS[2][64]; // colour, square
 extern Bitboard KNIGHT_ATTACKS[64];
 extern Bitboard KING_ATTACKS[64];
+extern Bitboard ROOK_ATTACKS[64][4096];
+extern Bitboard BISHOP_ATTACKS[64][512];
 
 extern Bitboard BISHOP_MASKS[64];
 extern Bitboard ROOK_MASKS[64];
@@ -21,16 +23,17 @@ Bitboard getPawnAttacks(int colour, int square);
 Bitboard getKnightAttacks(int square);
 Bitboard getKingAttacks(int square);
 
+int magic_index(uint64_t magic, Bitboard blockers, int n);
+
 void initBishopMasks();
 void initRookMasks();
 
 void initBishopMagics();
 void initRookMagics();
 
-Bitboard getBishopAttacks(int square, Bitboard blockers);
-Bitboard getRookAttacks(int square, Bitboard blockers);
-
-
+Bitboard getBishopAttacks(int square, Bitboard occupancy);
+Bitboard getRookAttacks(int square, Bitboard occupancy);
+Bitboard getQueenAttacks(int square, Bitboard occupancy);
 
 
 #endif

@@ -5,6 +5,28 @@ Bitboard PAWN_ATTACKS[2][64];
 Bitboard KNIGHT_ATTACKS[64];
 Bitboard KING_ATTACKS[64];
 
+const int BISHOP_BITS[64] = {
+    6, 5, 5, 5, 5, 5, 5, 6,
+    5, 5, 5, 5, 5, 5, 5, 5,
+    5, 5, 7, 7, 7, 7, 5, 5,
+    5, 5, 7, 9, 9, 7, 5, 5,
+    5, 5, 7, 9, 9, 7, 5, 5,
+    5, 5, 7, 7, 7, 7, 5, 5,
+    5, 5, 5, 5, 5, 5, 5, 5,
+    6, 5, 5, 5, 5, 5, 5, 6
+};
+
+const int ROOK_BITS[64] = {
+    12, 11, 11, 11, 11, 11, 11, 12,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    12, 11, 11, 11, 11, 11, 11, 12
+};
+
 void initPawnAttacks() {
     // fill up the PAWN_ATTACKS array
     for (int sq = 0; sq < 64; sq++) {
@@ -91,18 +113,6 @@ void initKingAttacks() {
     }
 }
 
-Bitboard getPawnAttacks(int colour, int square) {
-    return PAWN_ATTACKS[colour][square];
-}
-
-Bitboard getKnightAttacks(int square) {
-    return KNIGHT_ATTACKS[square];
-}
-
-Bitboard getKingAttacks(int square) {
-    return KING_ATTACKS[square];
-}
-
 void initBishopMasks() {
     for (int sq = 0; sq < 64; sq++) {
         Bitboard attacks = 0;
@@ -145,4 +155,47 @@ void initRookMasks() {
             SetBit(attacks, rank * 8 + f);
         }
     }
+}
+
+void initBishopMagics() {
+
+}
+
+
+void initRookMagics() {
+
+}
+
+int magic_index(uint64_t magic, Bitboard blockers, int n){
+    return (blockers * magic) >> (64 - n);
+}
+
+Bitboard getPawnAttacks(int colour, int square) {
+    return PAWN_ATTACKS[colour][square];
+}
+
+Bitboard getKnightAttacks(int square) {
+    return KNIGHT_ATTACKS[square];
+}
+
+Bitboard getKingAttacks(int square) {
+    return KING_ATTACKS[square];
+}
+
+Bitboard getBishopAttacks(int square, Bitboard occupancy) {
+    Bitboard blockers = occupancy & BISHOP_MASKS[square];
+    uint64_t magic = BISHOP_MAGICS[square];
+
+    return BISHOP_ATTACKS[magic_index(magic, blockers, BISHOP_BITS[square])];
+}
+
+Bitboard getRookAttacks(int square, Bitboard occupancy) {
+    Bitboard blockers = occupancy & ROOK_MASKS[square];
+    uint64_t magic = ROOK_MAGICS[square];
+
+    return ROOK_ATTACKS[magic_index(magic, blockers, ROOK_BITS[square])];
+}
+
+Bitboard getQueenAttacks(int square, Bitboard occupancy) {
+    return getBishopAttacks(square, occupancy) | getRookAttacks(square, occupancy);
 }
