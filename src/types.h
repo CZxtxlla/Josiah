@@ -6,10 +6,6 @@
 #define MAX_MOVES 128 // max possible moves from a given position
 
 typedef uint64_t Bitboard;
-typedef uint16_t Move;
-// move encoding:
-// 0-5 bits for from square, 6-11 bits for to square, 12-16 for move flag (promotion, castle, etc...)
-
 
 typedef struct {
     Bitboard occupancies[3]; // 0 = white, 1 = black, 2 = both
@@ -17,11 +13,6 @@ typedef struct {
 
     uint64_t hash; // zobrist hash
 } Board;
-
-typedef struct {
-    Move moves[MAX_MOVES];
-    int size;
-} MoveList;
 
 
 enum {
@@ -64,5 +55,10 @@ enum {
     A7, B7, C7, D7, E7, F7, G7, H7,
     A8, B8, C8, D8, E8, F8, G8, H8,
 };
+
+
+#define SetBit(board, square) ((board) |= (1ULL << (square)))
+#define PopBit(board, square) ((board) &= ~(1ULL << (square)))
+#define GetBit(board, square) ((board) & (1ULL << (square)))
 
 #endif 
