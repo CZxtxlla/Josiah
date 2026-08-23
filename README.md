@@ -12,4 +12,4 @@ https://www.youtube.com/channel/UCB9-prLkPwgvlKKqDgXhsMQ/videos)
 
 Resources I have used:
 https://analog-hors.github.io/site/magic-bitboards/
-Chess Programming Wikis
+Chess Programming Wiki

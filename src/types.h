@@ -11,8 +11,11 @@ typedef struct {
     Bitboard occupancies[3]; // 0 = white, 1 = black, 2 = both
     Bitboard pieces[12]; // one bitboard for each piece
 
+    int castling; // 1111 = KQkq, 1001 = Kq
+    int stm; // 0 for white, 1 for black
+
     uint64_t hash; // zobrist hash
-} Board;
+} Position;
 
 
 enum {
