@@ -6,5 +6,6 @@
 int main() {
     initAttacks();
 
+    printBitboard(PAWN_ATTACKS[WHITE][D4]);
     return 0;
 }
