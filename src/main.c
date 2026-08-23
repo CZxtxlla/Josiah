@@ -4,13 +4,10 @@
 
 
 int main() {
-    initPawnAttacks();
-    initKnightAttacks();
-    initKingAttacks();
+    initAttacks();
 
-    for (int i = 0; i < 64; i++) {
-        printBitboard(PAWN_ATTACKS[WHITE][i]);
-    }
+    testBishopAttacks();
+    testRookAttacks();
 
 
     return 0;

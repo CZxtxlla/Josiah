@@ -23,7 +23,7 @@ Bitboard getPawnAttacks(int colour, int square);
 Bitboard getKnightAttacks(int square);
 Bitboard getKingAttacks(int square);
 
-int magic_index(uint64_t magic, Bitboard blockers, int n);
+int magicIndex(uint64_t magic, Bitboard blockers, int n);
 
 void initBishopMasks();
 void initRookMasks();
@@ -31,9 +31,16 @@ void initRookMasks();
 void initBishopMagics();
 void initRookMagics();
 
+void initBishopAttacks();
+void initRookAttacks();
+
+void initAttacks();
+
 Bitboard getBishopAttacks(int square, Bitboard occupancy);
 Bitboard getRookAttacks(int square, Bitboard occupancy);
 Bitboard getQueenAttacks(int square, Bitboard occupancy);
 
+void testBishopAttacks();
+void testRookAttacks();
 
 #endif

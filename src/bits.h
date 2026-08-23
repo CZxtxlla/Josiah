@@ -2,6 +2,7 @@
 #define BITS_H
 
 #include "types.h"
+#include <stdio.h>
 
 #define A_FILE 0x0101010101010101ULL
 #define B_FILE 0x0202020202020202ULL
@@ -15,13 +16,25 @@
 #define RANK_2 0x000000000000FF00ULL
 #define RANK_1 0x00000000000000FFULL
 
-void printBitboard(Bitboard board);
-
 #define SetBit(board, square) ((board) |= (1ULL << (square)))
 #define PopBit(board, square) ((board) &= ~(1ULL << (square)))
 #define GetBit(board, square) ((board) & (1ULL << (square)))
 
 #define Rank(square) (square / 8)
 #define File(square) (square % 8)
+
+static inline void printBitboard(Bitboard board) {
+    for (int i = 0; i < 64; i++) {
+        if ((i & 7) == 0) {
+            printf(" %d ", 8 - (i >> 3));
+        }
+        printf(" %d", GetBit(board, i ^ 56) ? 1 : 0);
+        
+        if ((i & 7) == 7) {
+            printf("\n");
+        }
+    }
+    printf("\n    a b c d e f g h\n\n");
+}
 
 #endif
