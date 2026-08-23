@@ -40,7 +40,4 @@ Bitboard getBishopAttacks(int square, Bitboard occupancy);
 Bitboard getRookAttacks(int square, Bitboard occupancy);
 Bitboard getQueenAttacks(int square, Bitboard occupancy);
 
-void testBishopAttacks();
-void testRookAttacks();
-
 #endif

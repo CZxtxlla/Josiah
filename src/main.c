@@ -6,9 +6,5 @@
 int main() {
     initAttacks();
 
-    testBishopAttacks();
-    testRookAttacks();
-
-
     return 0;
 }
