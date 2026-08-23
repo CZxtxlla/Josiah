@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include "attacks.h"
 #include "bits.h"
+#include "position.h"
 
 
 int main() {
     initAttacks();
 
-    printBitboard(PAWN_ATTACKS[WHITE][D4]);
+    Position pos;
+    parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", &pos);
+
+    printPosition(&pos);
     return 0;
 }

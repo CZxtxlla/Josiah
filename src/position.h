@@ -5,12 +5,16 @@
 #include <stdio.h>
 #include "bits.h"
 
+extern const int CHAR_TO_PIECE[];
+extern const char PIECE_TO_CHAR[];
+
 typedef struct {
     Bitboard occupancies[3]; // 0 = white, 1 = black, 2 = both
     Bitboard pieces[12]; // one bitboard for each piece
 
     int castling; // 1111 = KQkq, 1001 = Kq
     int stm; // 0 for white, 1 for black
+    int ep_square;
 
     uint64_t hash; // zobrist hash
 } Position;
@@ -23,53 +27,18 @@ static inline void printPosition(Position* pos) {
         if ((i & 7) == 0) {
             printf(" %d ", 8 - (i >> 3));
         }
+
+        int found = 0;
+
         for (int p = WHITE_PAWN; p <= BLACK_KING; p++) {
-            Bitboard board = pos->pieces[p];
-            if (GetBit(board, i ^ 56)) {
-                switch(p) {
-                    case WHITE_PAWN:
-                        printf(" P");
-                        break;
-                    case WHITE_KNIGHT:
-                        printf(" N");
-                        break;
-                    case WHITE_BISHOP:
-                        printf(" B");
-                        break;
-                    case WHITE_ROOK:
-                        printf(" R");
-                        break;
-                    case WHITE_QUEEN:
-                        printf(" Q");
-                        break;
-                    case WHITE_KING:
-                        printf(" K");
-                        break;
-                    case BLACK_PAWN:
-                        printf(" p");
-                        break;
-                    case BLACK_KNIGHT:
-                        printf(" n");
-                        break;
-                    case BLACK_BISHOP:
-                        printf(" b");
-                        break;
-                    case BLACK_ROOK:
-                        printf(" r");
-                        break;
-                    case BLACK_QUEEN:
-                        printf(" q");
-                        break;
-                    case BLACK_KING:
-                        printf(" k");
-                        break;
-                    default:
-                        printf(" Error");
-                        break;
-                }
+            if (GetBit(pos->pieces[p], i ^ 56)) {
+                found = 1;
+                printf(" %c", PIECE_TO_CHAR[p]);
                 break;
             }
-            
+        }
+        if(!found) {
+            printf(" .");
         }
         if ((i & 7) == 7) {
             printf("\n");
@@ -78,7 +47,10 @@ static inline void printPosition(Position* pos) {
     printf("\n    a b c d e f g h\n\n");
 }
 
-
+#define WHITE_KS 0x8
+#define WHITE_QS 0x4
+#define BLACK_KS 0x2
+#define BLACK_QS 0x1
 
 
 #endif
