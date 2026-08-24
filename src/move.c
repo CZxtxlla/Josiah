@@ -12,6 +12,7 @@ const int castlingRights[64] = {
 };
 
 void makeMove(Position* pos, Move move, Undo* undo) {
+    // only for fully legal moves (doesn't check king in check)
     int from = MoveFrom(move);
     int to = MoveTo(move);
     int piece = pos->squares[from];
@@ -92,6 +93,12 @@ void makeMove(Position* pos, Move move, Undo* undo) {
 }
 
 
-int unmakeMove(Position* pos, Move move, Undo* undo) {
+void unmakeMove(Position* pos, Move move, Undo* undo) {
+    pos->stm ^= 1;
+    pos->xstm ^= 1;
+
+    pos->castling = undo->castling;
+    pos->ep_square = undo->ep_square;
+    pos->hash = undo->hash;
 
 }
