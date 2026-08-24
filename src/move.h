@@ -32,6 +32,10 @@ typedef struct {
     int size;
 } MoveList;
 
+static inline void addMove(MoveList* list, Move move) {
+    list->moves[list->size++] = move;
+}
+
 void makeMove(Position* pos, Move move, Undo* undo);
 void unmakeMove(Position* pos, Move move, Undo* undo);
 
