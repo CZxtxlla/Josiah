@@ -22,6 +22,8 @@ typedef struct {
     int stm; // 0 for white, 1 for black
     int xstm;
     int ep_square;
+    int half_moves;
+    int full_moves;
 
     uint64_t hash; // zobrist hash
 } Position;
@@ -30,6 +32,8 @@ typedef struct {
     int capture_piece;
     int castling;
     int ep_square;
+    int movedPiece;
+    int half_moves;
 
     uint64_t hash; 
 } Undo;

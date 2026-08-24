@@ -5,8 +5,12 @@
 #include "move.h"
 #include "position.h"
 
+int moveIsLegal(Position* pos, Move move);
+
 int generateLegalMoves(Position* pos, MoveList moves);
 int generateNoisyMoves(Position* pos, MoveList moves);
 int generateQuietMoves(Position* pos, MoveList moves);
+
+
 
 #endif

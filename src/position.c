@@ -97,6 +97,10 @@ void parseFen(char* fen, Position* pos) {
     while (*fen && *fen != ' ') {
         fen++;
     }
+    
+    pos->half_moves = 0;
+    pos->full_moves = 0;
+    sscanf(fen, " %d %d", &pos->half_moves, &pos->full_moves);
 
     // occupancies
 

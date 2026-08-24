@@ -21,6 +21,13 @@ void makeMove(Position* pos, Move move, Undo* undo) {
     undo->capture_piece = captured;
     undo->ep_square = pos->ep_square;
     undo->castling = pos->castling;
+    undo->movedPiece = piece;
+    undo->hash = pos->hash;
+    undo->half_moves = pos->half_moves;
+
+    if (piece % 6 == 0) {
+        pos->half_moves = 0;
+    }
 
     // move piece
     FlipBits(pos->pieces[piece], from, to);
@@ -60,6 +67,7 @@ void makeMove(Position* pos, Move move, Undo* undo) {
         }
 
     } else if (IsCapture(move)) {
+        pos->half_moves = 0;
         int capsq = to;
         if (IsEP(move)) {
             capsq = (pos->stm == WHITE) ? (to - 8) : (to + 8);
@@ -87,6 +95,8 @@ void makeMove(Position* pos, Move move, Undo* undo) {
     pos->castling &= castlingRights[from];
     pos->castling &= castlingRights[to];
 
+    pos->full_moves -= (pos->stm == BLACK);
+
     pos->stm ^= 1;
     pos->xstm ^= 1;
 
@@ -94,11 +104,76 @@ void makeMove(Position* pos, Move move, Undo* undo) {
 
 
 void unmakeMove(Position* pos, Move move, Undo* undo) {
-    pos->stm ^= 1;
-    pos->xstm ^= 1;
+    int from = MoveFrom(move);
+    int to = MoveTo(move);
+    int piece = undo->movedPiece;
 
     pos->castling = undo->castling;
     pos->ep_square = undo->ep_square;
     pos->hash = undo->hash;
+    pos->half_moves = undo->half_moves;
 
+    pos->stm ^= 1;
+    pos->xstm ^= 1;
+
+    if (IsPromo(move)) {
+        int promoted = PromoType(move) + ((pos->stm == WHITE) ? 0 : 8);
+        FlipBit(pos->pieces[piece], to);
+        FlipBit(pos->pieces[promoted], to);
+        pos->squares[to] = piece;
+    }
+
+    // move piece back to where it was
+    FlipBits(pos->pieces[piece], to, from);
+    FlipBits(pos->occupancies[pos->stm], to, from);
+    FlipBits(pos->occupancies[BOTH], to, from);
+
+    pos->squares[to] = PIECE_NONE;
+    pos->squares[from] = piece;
+
+    if (IsKingCastle(move)) {
+        // move rook back to where it was
+        if (pos->stm == WHITE) {
+            FlipBits(pos->pieces[WHITE_ROOK], 5, 7);
+            FlipBits(pos->occupancies[WHITE], 5, 7);
+            FlipBits(pos->occupancies[BOTH], 5, 7);
+            pos->squares[5] = PIECE_NONE;
+            pos->squares[7] = WHITE_ROOK;
+        } else {
+            FlipBits(pos->pieces[BLACK_ROOK], 61, 63);
+            FlipBits(pos->occupancies[BLACK], 61, 63);
+            FlipBits(pos->occupancies[BOTH], 61, 63);
+            pos->squares[61] = PIECE_NONE;
+            pos->squares[63] = BLACK_ROOK;
+        }
+    } else if (IsQueenCastle(move)) {
+        // move rook back
+        if (pos->stm == WHITE) {
+            FlipBits(pos->pieces[WHITE_ROOK], 0, 3);
+            FlipBits(pos->occupancies[WHITE], 0, 3);
+            FlipBits(pos->occupancies[BOTH], 0, 3);
+            pos->squares[3] = PIECE_NONE;
+            pos->squares[0] = WHITE_ROOK;
+        } else {
+            FlipBits(pos->pieces[BLACK_ROOK], 56, 59);
+            FlipBits(pos->occupancies[BLACK], 56, 59);
+            FlipBits(pos->occupancies[BOTH], 56, 59);
+            pos->squares[59] = PIECE_NONE;
+            pos->squares[56] = BLACK_ROOK;
+        }
+    } else if (IsCapture(move)) {
+        // restore captured piece
+        int capsq = to;
+        if (IsEP(move)) {
+            capsq = (pos->stm == WHITE) ? (to - 8) : (to + 8);
+        }
+
+        FlipBit(pos->pieces[undo->capture_piece], capsq);
+        FlipBit(pos->occupancies[pos->xstm], capsq);
+        FlipBit(pos->occupancies[BOTH], capsq);
+
+        pos->squares[capsq] = undo->capture_piece;
+    }
+
+    pos->full_moves -= (pos->stm == BLACK);
 }
