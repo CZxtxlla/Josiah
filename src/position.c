@@ -40,6 +40,7 @@ void parseFen(char* fen, Position* pos) {
         if ((*fen >= 'a' && *fen <= 'z') || (*fen >= 'A' && *fen <= 'Z')) {
             int piece = CHAR_TO_PIECE[(int)(*fen)];
             SetBit(pos->pieces[piece], square);
+            pos->squares[square] = piece;
             square++;
         } else if (*fen >= '1' && *fen <= '8') {
             square += (*fen) - '0';
@@ -54,9 +55,11 @@ void parseFen(char* fen, Position* pos) {
     // stm
     if (*fen == 'w') {
         pos->stm = WHITE;
+        pos->xstm = BLACK;
         fen++;
     } else if (*fen == 'b') {
         pos->stm = BLACK;
+        pos->xstm = WHITE;
         fen++;
     } else {
         printf("Invalid stm.\n");

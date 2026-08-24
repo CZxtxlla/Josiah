@@ -32,6 +32,8 @@ enum {
     BLACK_KING
 };
 
+#define PIECE_NONE 12
+
 enum {
     WHITE,
     BLACK,

@@ -20,8 +20,13 @@
 #define PopBit(board, square) ((board) &= ~(1ULL << (square)))
 #define GetBit(board, square) ((board) & (1ULL << (square)))
 
+#define FlipBit(board, square) ((board) ^= (1ULL << (square)))
+#define FlipBits(board, sq1, sq2) ((board) ^= (1ULL << (sq1)) ^ (1ULL << (sq2)))
+
 #define Rank(square) (square / 8)
 #define File(square) (square % 8)
+
+#define Piece(type, colour) (colour * 6 + type)
 
 static inline void printBitboard(Bitboard board) {
     for (int i = 0; i < 64; i++) {

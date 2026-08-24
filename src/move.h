@@ -2,6 +2,7 @@
 #define MOVE_H
 
 #include "types.h"
+#include "position.h"
 
 typedef uint16_t Move;
 // move encoding:
@@ -31,6 +32,9 @@ typedef struct {
     int size;
 } MoveList;
 
+void makeMove(Position* pos, Move move, Undo* undo);
+void unmakeMove(Position* pos, Move move, Undo* undo);
+
 #define EncodeMove(from, to, flags) (from) | ((to) << 6) | ((flags << 12))
 #define MoveFrom(Move) (move & 63)
 #define MoveTo(Move) ((move >> 6) & 63)
@@ -38,6 +42,7 @@ typedef struct {
 
 #define IsCapture(move) (!!(MoveFlag(move) & CAPTURE))
 #define IsEP(move) (MoveFlag(move) == EP_CAPTURE)
+#define IsDouble(move) (MoveFlag(move) == DOUBLE_PUSH)
 #define IsKingCastle(move) (MoveFlag(move) == KING_CASTLE)
 #define IsQueenCastle(move) (MoveFlag(move) == QUEEN_CASTLE)
 #define IsPromo(move) (!!(MoveFlag(move) & PROMO))

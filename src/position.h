@@ -11,13 +11,23 @@ extern const char PIECE_TO_CHAR[];
 typedef struct {
     Bitboard occupancies[3]; // 0 = white, 1 = black, 2 = both
     Bitboard pieces[12]; // one bitboard for each piece
+    uint8_t squares[64]; 
 
     int castling; // 1111 = KQkq, 1001 = Kq
     int stm; // 0 for white, 1 for black
+    int xstm;
     int ep_square;
 
     uint64_t hash; // zobrist hash
 } Position;
+
+typedef struct {
+    int capture_piece;
+    int castling;
+    int ep_square;
+
+    uint64_t hash; 
+} Undo;
 
 // fill pos with info from fen
 void parseFen(char* fen, Position* pos);
