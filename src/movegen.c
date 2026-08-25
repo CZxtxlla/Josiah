@@ -117,8 +117,6 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
             }
         }
 
-        // other captures
-
     } else {
         Bitboard pawns = pos->pieces[BLACK_PAWN];
         Bitboard promotingPawns = pawns & RANK_2;
@@ -186,6 +184,70 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
         }
 
     }   
+
+    // other captures
+    int offset = (pos->stm == WHITE) ? 0 : 6;
+    Bitboard enemies = pos->occupancies[pos->xstm];
+
+    Bitboard knights = pos->pieces[KNIGHT + offset];
+    while (knights) {
+        int fromSq = poplsb(&knights);
+
+        Bitboard attacks = getKnightAttacks(fromSq) & enemies;
+
+        while (attacks) {
+            int targetSq = poplsb(&attacks);
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, CAPTURE));
+        }
+    }
+
+    Bitboard kings = pos->pieces[KING + offset];
+    while (kings) {
+        int fromSq = poplsb(&kings);
+
+        Bitboard attacks = getKingAttacks(fromSq) & enemies;
+
+        while (attacks) {
+            int targetSq = poplsb(&attacks);
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, CAPTURE));
+        }
+    }
+
+    Bitboard bishops = pos->pieces[BISHOP + offset];
+    while (bishops) {
+        int fromSq = poplsb(&bishops);
+
+        Bitboard attacks = getBishopAttacks(fromSq, pos->occupancies[BOTH]) & enemies;
+
+        while (attacks) {
+            int targetSq = poplsb(&attacks);
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, CAPTURE));
+        }
+    }
+
+    Bitboard rooks = pos->pieces[ROOK + offset];
+    while (rooks) {
+        int fromSq = poplsb(&rooks);
+
+        Bitboard attacks = getRookAttacks(fromSq, pos->occupancies[BOTH]) & enemies;
+
+        while (attacks) {
+            int targetSq = poplsb(&attacks);
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, CAPTURE));
+        }
+    }
+
+    Bitboard queens = pos->pieces[QUEEN + offset];
+    while (queens) {
+        int fromSq = poplsb(&queens);
+
+        Bitboard attacks = getQueenAttacks(fromSq, pos->occupancies[BOTH]) & enemies;
+
+        while (attacks) {
+            int targetSq = poplsb(&attacks);
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, CAPTURE));
+        }
+    }
 }
 
 
