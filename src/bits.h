@@ -28,6 +28,12 @@
 
 #define Piece(type, colour) (colour * 6 + type)
 
+static inline int poplsb(Bitboard* board) {
+    int lsb = __builtin_ctzll(*board);
+    *board &= *board - 1;
+    return lsb;
+}
+
 static inline void printBitboard(Bitboard board) {
     for (int i = 0; i < 64; i++) {
         if ((i & 7) == 0) {

@@ -39,7 +39,7 @@ static inline void addMove(MoveList* list, Move move) {
 void makeMove(Position* pos, Move move, Undo* undo);
 void unmakeMove(Position* pos, Move move, Undo* undo);
 
-#define EncodeMove(from, to, flags) (from) | ((to) << 6) | ((flags << 12))
+#define EncodeMove(from, to, flag) (from) | ((to) << 6) | ((flag << 12))
 #define MoveFrom(Move) (move & 63)
 #define MoveTo(Move) ((move >> 6) & 63)
 #define MoveFlag(Move) ((move >> 12) & 15)

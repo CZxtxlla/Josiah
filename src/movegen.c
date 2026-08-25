@@ -49,14 +49,152 @@ int moveWasLegal(Position* pos) {
     return !isSquareAttacked(pos, kingsq, pos->xstm);
 }
 
-int generateNoisyMoves(Position* pos, MoveList* moves) {
-    return 0;
+void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
+    // captures, en passant, promotions
+    if (pos->stm == WHITE) {
+        Bitboard pawns = pos->pieces[WHITE_PAWN];
+        Bitboard promotingPawns = pawns & RANK_7;
+        Bitboard normalPawns = pawns & ~RANK_7;
+        Bitboard enemies = pos->occupancies[BLACK];
+
+        Bitboard rightCaptures = (normalPawns << 9) & ~A_FILE & enemies;
+        Bitboard leftCaptures = (normalPawns << 7) & ~H_FILE & enemies;
+        while (rightCaptures) {
+            int targetSq = poplsb(&rightCaptures);
+            addMove(noisyMoves, EncodeMove(targetSq - 9, targetSq, CAPTURE));
+        }
+        while (leftCaptures) {
+            int targetSq = poplsb(&leftCaptures);
+            addMove(noisyMoves, EncodeMove(targetSq - 7, targetSq, CAPTURE));
+        }
+
+        // promo captures
+        Bitboard rightPromoCaptures = (promotingPawns << 9) & ~A_FILE & enemies;
+        Bitboard leftPromoCaptures = (promotingPawns << 7) & ~H_FILE & enemies;
+
+        while (rightPromoCaptures) {
+            int targetSq = poplsb(&rightPromoCaptures);
+            int fromSq = targetSq - 9;
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
+        }
+        while (leftPromoCaptures) {
+            int targetSq = poplsb(&leftPromoCaptures);
+            int fromSq = targetSq - 7;
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
+        }
+
+        // promos
+        Bitboard promos = (promotingPawns << 8) & ~pos->occupancies[BOTH];
+        while (promos) {
+            int targetSq = poplsb(&promos);
+            int fromSq = targetSq - 8;
+            // thought... reversing the order could maybe provide speedup in move ordering
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN));
+        }
+
+        // ep
+        if (pos->ep_square != -1) {
+            Bitboard epMask = (1ULL << pos->ep_square);
+            Bitboard rightEPCaptures = (normalPawns << 9) & ~A_FILE & epMask;
+            Bitboard leftEPCaptures = (normalPawns << 7) & ~H_FILE & epMask;
+
+            while(rightEPCaptures) {
+                int targetSq = poplsb(&rightEPCaptures);
+                addMove(noisyMoves, EncodeMove(targetSq - 9, targetSq, EP_CAPTURE));
+            }
+            while(leftEPCaptures) {
+                int targetSq = poplsb(&leftEPCaptures);
+                addMove(noisyMoves, EncodeMove(targetSq - 7, targetSq, EP_CAPTURE));
+            }
+        }
+
+        // other captures
+
+    } else {
+        Bitboard pawns = pos->pieces[BLACK_PAWN];
+        Bitboard promotingPawns = pawns & RANK_2;
+        Bitboard normalPawns = pawns & ~RANK_2;
+        Bitboard enemies = pos->occupancies[WHITE];
+
+        Bitboard rightCaptures = (normalPawns >> 9) & ~H_FILE & enemies;
+        Bitboard leftCaptures = (normalPawns >> 7) & ~A_FILE & enemies;
+        while (rightCaptures) {
+            int targetSq = poplsb(&rightCaptures);
+            addMove(noisyMoves, EncodeMove(targetSq + 9, targetSq, CAPTURE));
+        }
+        while (leftCaptures) {
+            int targetSq = poplsb(&leftCaptures);
+            addMove(noisyMoves, EncodeMove(targetSq + 7, targetSq, CAPTURE));
+        }
+
+        // promo captures
+        Bitboard rightPromoCaptures = (promotingPawns >> 9) & ~H_FILE & enemies;
+        Bitboard leftPromoCaptures = (promotingPawns >> 7) & ~A_FILE & enemies;
+
+        while (rightPromoCaptures) {
+            int targetSq = poplsb(&rightPromoCaptures);
+            int fromSq = targetSq + 9;
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
+        }
+        while (leftPromoCaptures) {
+            int targetSq = poplsb(&leftPromoCaptures);
+            int fromSq = targetSq + 7;
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK_CAPTURE));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
+        }
+
+        // promos
+        Bitboard promos = (promotingPawns >> 8) & ~pos->occupancies[BOTH];
+        while (promos) {
+            int targetSq = poplsb(&promos);
+            int fromSq = targetSq + 8;
+            // thought... reversing the order could maybe provide speedup in move ordering
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK));
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN));
+        }
+
+        // ep
+        if (pos->ep_square != -1) {
+            Bitboard epMask = (1ULL << pos->ep_square);
+            Bitboard rightEPCaptures = (normalPawns >> 9) & ~H_FILE & epMask;
+            Bitboard leftEPCaptures = (normalPawns >> 7) & ~A_FILE & epMask;
+
+            while(rightEPCaptures) {
+                int targetSq = poplsb(&rightEPCaptures);
+                addMove(noisyMoves, EncodeMove(targetSq + 9, targetSq, EP_CAPTURE));
+            }
+            while(leftEPCaptures) {
+                int targetSq = poplsb(&leftEPCaptures);
+                addMove(noisyMoves, EncodeMove(targetSq + 7, targetSq, EP_CAPTURE));
+            }
+        }
+
+    }   
 }
-int generateQuietMoves(Position* pos, MoveList* moves) {
+
+
+void generateQuietMoves(Position* pos, MoveList* quietMoves) {
+    // everything but captures, en passant, promotions
     return 0;
 }
 
-int generateLegalMoves(Position* pos, MoveList* legalMoves) {
+void generateLegalMoves(Position* pos, MoveList* legalMoves) {
     MoveList pseudoMoves;
     pseudoMoves.size = 0;
     legalMoves->size = 0;
