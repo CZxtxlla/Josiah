@@ -75,18 +75,18 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
         while (rightPromoCaptures) {
             int targetSq = poplsb(&rightPromoCaptures);
             int fromSq = targetSq - 9;
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK_CAPTURE));
-            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
         }
         while (leftPromoCaptures) {
             int targetSq = poplsb(&leftPromoCaptures);
             int fromSq = targetSq - 7;
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK_CAPTURE));
-            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
         }
 
         // promos
@@ -94,11 +94,10 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
         while (promos) {
             int targetSq = poplsb(&promos);
             int fromSq = targetSq - 8;
-            // thought... reversing the order could maybe provide speedup in move ordering
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK));
-            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN));
         }
 
         // ep
@@ -141,18 +140,18 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
         while (rightPromoCaptures) {
             int targetSq = poplsb(&rightPromoCaptures);
             int fromSq = targetSq + 9;
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK_CAPTURE));
-            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
         }
         while (leftPromoCaptures) {
             int targetSq = poplsb(&leftPromoCaptures);
             int fromSq = targetSq + 7;
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP_CAPTURE));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK_CAPTURE));
-            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN_CAPTURE));
         }
 
         // promos
@@ -160,11 +159,10 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
         while (promos) {
             int targetSq = poplsb(&promos);
             int fromSq = targetSq + 8;
-            // thought... reversing the order could maybe provide speedup in move ordering
+            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_KNIGHT));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_BISHOP));
             addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_ROOK));
-            addMove(noisyMoves, EncodeMove(fromSq, targetSq, PROMO_QUEEN));
         }
 
         // ep
@@ -253,7 +251,97 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
 
 void generateQuietMoves(Position* pos, MoveList* quietMoves) {
     // everything but captures, en passant, promotions
-    return 0;
+    // pawn pushes
+    if (pos->stm == WHITE) {
+        Bitboard pushes = ((pos->pieces[WHITE_PAWN] & ~RANK_7) << 8) & ~pos->occupancies[BOTH];
+        Bitboard doublePushes = ((pushes & RANK_3) << 8) & ~pos->occupancies[BOTH];
+
+        while (pushes) {
+            int targetSq = poplsb(&pushes);
+            addMove(quietMoves, EncodeMove(targetSq - 8, targetSq, QUIET));
+        }
+
+        while(doublePushes) {
+            int targetSq = poplsb(&doublePushes);
+            addMove(quietMoves, EncodeMove(targetSq - 16, targetSq, DOUBLE_PUSH));
+        }
+    } else {
+        Bitboard pushes = ((pos->pieces[BLACK_PAWN] & ~RANK_2) >> 8) & ~pos->occupancies[BOTH];
+        Bitboard doublePushes = ((pushes & RANK_6) >> 8) & ~pos->occupancies[BOTH];
+
+        while (pushes) {
+            int targetSq = poplsb(&pushes);
+            addMove(quietMoves, EncodeMove(targetSq + 8, targetSq, QUIET));
+        }
+
+        while(doublePushes) {
+            int targetSq = poplsb(&doublePushes);
+            addMove(quietMoves, EncodeMove(targetSq + 16, targetSq, DOUBLE_PUSH));
+        }
+    }
+
+    // other pieces
+
+    int offset = (pos->stm == WHITE) ? 0 : 6;
+    Bitboard occupancy = pos->occupancies[BOTH];
+
+    Bitboard knights = pos->pieces[KNIGHT + offset];
+    while (knights) {
+        int fromSq = poplsb(&knights);
+
+        Bitboard moves = getKnightAttacks(fromSq) & ~occupancy;
+
+        while (moves) {
+            int targetSq = poplsb(&moves);
+            addMove(quietMoves, EncodeMove(fromSq, targetSq, QUIET));
+        }
+    }
+
+    Bitboard kings = pos->pieces[KING + offset];
+    while (kings) {
+        int fromSq = poplsb(&kings);
+
+        Bitboard moves = getKingAttacks(fromSq) & ~occupancy;
+
+        while (moves) {
+            int targetSq = poplsb(&moves);
+            addMove(quietMoves, EncodeMove(fromSq, targetSq, QUIET));
+        }
+    }
+    Bitboard bishops = pos->pieces[BISHOP + offset];
+    while (bishops) {
+        int fromSq = poplsb(&bishops);
+
+        Bitboard moves = getBishopAttacks(fromSq, occupancy) & ~occupancy;
+
+        while (moves) {
+            int targetSq = poplsb(&moves);
+            addMove(quietMoves, EncodeMove(fromSq, targetSq, QUIET));
+        }
+    }
+    Bitboard rooks = pos->pieces[ROOK + offset];
+    while (rooks) {
+        int fromSq = poplsb(&rooks);
+
+        Bitboard moves = getRookAttacks(fromSq, occupancy) & ~occupancy;
+
+        while (moves) {
+            int targetSq = poplsb(&moves);
+            addMove(quietMoves, EncodeMove(fromSq, targetSq, QUIET));
+        }
+    }
+    Bitboard queens = pos->pieces[QUEEN + offset];
+    while (queens) {
+        int fromSq = poplsb(&queens);
+
+        Bitboard moves = getQueenAttacks(fromSq, occupancy) & ~occupancy;
+
+        while (moves) {
+            int targetSq = poplsb(&moves);
+            addMove(quietMoves, EncodeMove(fromSq, targetSq, QUIET));
+        }
+    }
+
 }
 
 void generateLegalMoves(Position* pos, MoveList* legalMoves) {
@@ -272,6 +360,4 @@ void generateLegalMoves(Position* pos, MoveList* legalMoves) {
         }
         unmakeMove(pos, pseudoMoves.moves[i], &undo);
     }
-
-    return legalMoves->size;
 }
