@@ -46,7 +46,7 @@ int moveWasLegal(Position* pos) {
 
     Bitboard king = pos->pieces[(pos->xstm == WHITE) ? WHITE_KING : BLACK_KING];
     int kingsq = __builtin_ctzll(king);
-    return !isSquareAttacked(pos, kingsq, pos->xstm);
+    return !isSquareAttacked(pos, kingsq, pos->stm);
 }
 
 void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
@@ -251,8 +251,8 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
 
 void generateQuietMoves(Position* pos, MoveList* quietMoves) {
     // everything but captures, en passant, promotions
-    // pawn pushes
     if (pos->stm == WHITE) {
+        // pawn pushes
         Bitboard pushes = ((pos->pieces[WHITE_PAWN] & ~RANK_7) << 8) & ~pos->occupancies[BOTH];
         Bitboard doublePushes = ((pushes & RANK_3) << 8) & ~pos->occupancies[BOTH];
 
@@ -265,6 +265,25 @@ void generateQuietMoves(Position* pos, MoveList* quietMoves) {
             int targetSq = poplsb(&doublePushes);
             addMove(quietMoves, EncodeMove(targetSq - 16, targetSq, DOUBLE_PUSH));
         }
+
+        // castling
+        if (pos->castling & WHITE_KS) {
+            Bitboard emptyMask = (1ULL << F1) | (1ULL << G1);
+            if (!(pos->occupancies[BOTH] & emptyMask)) {
+                if (!isSquareAttacked(pos, E1, BLACK) && !isSquareAttacked(pos, F1, BLACK) && !isSquareAttacked(pos, G1, BLACK)) {
+                    addMove(quietMoves, EncodeMove(E1, G1, KING_CASTLE));
+                }
+            }
+        }
+        if (pos->castling & WHITE_QS) {
+            Bitboard emptyMask = (1ULL << D1) | (1ULL << C1) | (1ULL << B1);
+            if (!(pos->occupancies[BOTH] & emptyMask)) {
+                if (!isSquareAttacked(pos, E1, BLACK) && !isSquareAttacked(pos, D1, BLACK) && !isSquareAttacked(pos, C1, BLACK)) {
+                    addMove(quietMoves, EncodeMove(E1, C1, QUEEN_CASTLE));
+                }
+            }
+        }
+
     } else {
         Bitboard pushes = ((pos->pieces[BLACK_PAWN] & ~RANK_2) >> 8) & ~pos->occupancies[BOTH];
         Bitboard doublePushes = ((pushes & RANK_6) >> 8) & ~pos->occupancies[BOTH];
@@ -277,6 +296,23 @@ void generateQuietMoves(Position* pos, MoveList* quietMoves) {
         while(doublePushes) {
             int targetSq = poplsb(&doublePushes);
             addMove(quietMoves, EncodeMove(targetSq + 16, targetSq, DOUBLE_PUSH));
+        }
+
+        if (pos->castling & BLACK_KS) {
+            Bitboard emptyMask = (1ULL << F8) | (1ULL << G8);
+            if (!(pos->occupancies[BOTH] & emptyMask)) {
+                if (!isSquareAttacked(pos, E8, WHITE) && !isSquareAttacked(pos, F8, WHITE) && !isSquareAttacked(pos, G8, WHITE)) {
+                    addMove(quietMoves, EncodeMove(E8, G8, KING_CASTLE));
+                }
+            }
+        }
+        if (pos->castling & BLACK_QS) {
+            Bitboard emptyMask = (1ULL << D8) | (1ULL << C8) | (1ULL << B8);
+            if (!(pos->occupancies[BOTH] & emptyMask)) {
+                if (!isSquareAttacked(pos, E8, WHITE) && !isSquareAttacked(pos, D8, WHITE) && !isSquareAttacked(pos, C8, WHITE)) {
+                    addMove(quietMoves, EncodeMove(E8, C8, QUEEN_CASTLE));
+                }
+            }
         }
     }
 
@@ -341,6 +377,8 @@ void generateQuietMoves(Position* pos, MoveList* quietMoves) {
             addMove(quietMoves, EncodeMove(fromSq, targetSq, QUIET));
         }
     }
+
+
 
 }
 

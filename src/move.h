@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "position.h"
+#include "bits.h"
 
 typedef uint16_t Move;
 // move encoding:
@@ -40,9 +41,9 @@ void makeMove(Position* pos, Move move, Undo* undo);
 void unmakeMove(Position* pos, Move move, Undo* undo);
 
 #define EncodeMove(from, to, flag) (from) | ((to) << 6) | ((flag << 12))
-#define MoveFrom(Move) (move & 63)
-#define MoveTo(Move) ((move >> 6) & 63)
-#define MoveFlag(Move) ((move >> 12) & 15)
+#define MoveFrom(move) (move & 63)
+#define MoveTo(move) ((move >> 6) & 63)
+#define MoveFlag(move) ((move >> 12) & 15)
 
 #define IsCapture(move) (!!(MoveFlag(move) & CAPTURE))
 #define IsEP(move) (MoveFlag(move) == EP_CAPTURE)
@@ -50,7 +51,18 @@ void unmakeMove(Position* pos, Move move, Undo* undo);
 #define IsKingCastle(move) (MoveFlag(move) == KING_CASTLE)
 #define IsQueenCastle(move) (MoveFlag(move) == QUEEN_CASTLE)
 #define IsPromo(move) (!!(MoveFlag(move) & PROMO))
-#define PromoType(move) ((MoveFlag(Move) & 0x3) + KNIGHT)
+#define PromoType(move) ((MoveFlag(move) & 0x3) + KNIGHT)
 
+static inline void printMove(Move m) {
+    int from = MoveFrom(m);
+    int rankFrom = Rank(from);
+    int fileFrom = File(from);
+    int to = MoveTo(m);
+    int rankTo = Rank(to);
+    int fileTo = File(to);
+    int t = IsPromo(m) ? PromoType(m) : ' ';
+
+    printf("%c%d%c%d%c \n", (char) fileFrom + 'a', rankFrom + 1, (char) fileTo + 'a', rankTo + 1, t);
+}
 
 #endif
