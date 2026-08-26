@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include "attacks.h"
-#include "bits.h"
-#include "position.h"
 #include "uci.h"
-#include "movegen.h"
+#include "zobrist.h"
 
 
 int main() {
     printf("Initializing engine...\n");
     initAttacks();
+    initZobrist();
     printf("Engine initialized.\n");
     uciLoop();
     
