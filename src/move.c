@@ -36,7 +36,6 @@ void makeMove(Position* pos, Move move, Undo* undo) {
 
     pos->squares[from] = PIECE_NONE;
     pos->squares[to] = piece;
-
     if (IsKingCastle(move)) {
         if (pos->stm == WHITE) {
             FlipBits(pos->pieces[WHITE_ROOK], 5, 7);
@@ -71,18 +70,19 @@ void makeMove(Position* pos, Move move, Undo* undo) {
         int capsq = to;
         if (IsEP(move)) {
             capsq = (pos->stm == WHITE) ? (to - 8) : (to + 8);
+            pos->squares[capsq] = PIECE_NONE;
         }
         FlipBit(pos->pieces[captured], capsq); // remove captured piece
         FlipBit(pos->occupancies[pos->xstm], capsq);
         FlipBit(pos->occupancies[BOTH], capsq);
-        pos->squares[capsq] = PIECE_NONE;
     }
     if (IsPromo(move)) {
         // promotion
-        int promotedType = PromoType(move) + ((pos->stm == WHITE) ? 0 : 8);
+        int promotedType = PromoType(move) + ((pos->stm == WHITE) ? 0 : 6);
         FlipBit(pos->pieces[piece], to);
         FlipBit(pos->pieces[promotedType], to);
         pos->squares[to] = promotedType;
+        pos->ep_square = -1;
 
     } else if (IsDouble(move)) {
         // double pawn push
@@ -95,7 +95,7 @@ void makeMove(Position* pos, Move move, Undo* undo) {
     pos->castling &= castlingRights[from];
     pos->castling &= castlingRights[to];
 
-    pos->full_moves -= (pos->stm == BLACK);
+    pos->full_moves += (pos->stm == BLACK);
 
     pos->stm ^= 1;
     pos->xstm ^= 1;
@@ -117,7 +117,7 @@ void unmakeMove(Position* pos, Move move, Undo* undo) {
     pos->xstm ^= 1;
 
     if (IsPromo(move)) {
-        int promoted = PromoType(move) + ((pos->stm == WHITE) ? 0 : 8);
+        int promoted = PromoType(move) + ((pos->stm == WHITE) ? 0 : 6);
         FlipBit(pos->pieces[piece], to);
         FlipBit(pos->pieces[promoted], to);
         pos->squares[to] = piece;

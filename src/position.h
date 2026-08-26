@@ -8,10 +8,10 @@
 extern const int CHAR_TO_PIECE[];
 extern const char PIECE_TO_CHAR[];
 
-#define WHITE_KS 0x8
-#define WHITE_QS 0x4
-#define BLACK_KS 0x2
-#define BLACK_QS 0x1
+#define WHITE_KS 0x1
+#define WHITE_QS 0x2
+#define BLACK_KS 0x4
+#define BLACK_QS 0x8
 
 typedef struct {
     Bitboard occupancies[3]; // 0 = white, 1 = black, 2 = both

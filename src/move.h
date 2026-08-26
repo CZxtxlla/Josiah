@@ -62,7 +62,7 @@ static inline void printMove(Move m) {
     int fileTo = File(to);
     int t = IsPromo(m) ? PromoType(m) : ' ';
 
-    printf("%c%d%c%d%c \n", (char) fileFrom + 'a', rankFrom + 1, (char) fileTo + 'a', rankTo + 1, t);
+    printf("%c%d%c%d%c", (char) fileFrom + 'a', rankFrom + 1, (char) fileTo + 'a', rankTo + 1, t);
 }
 
 #endif

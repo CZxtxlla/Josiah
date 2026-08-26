@@ -34,6 +34,10 @@ const char PIECE_TO_CHAR[] = {
 void parseFen(char* fen, Position* pos) {
     memset(pos, 0, sizeof(Position));
 
+    for (int i = 0; i < 64; i++) {
+        pos->squares[i] = PIECE_NONE;
+    }
+
     int square = 56;
     // pieces
     while (*fen != ' ') {
