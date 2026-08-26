@@ -13,12 +13,14 @@ extern const char PIECE_TO_CHAR[];
 #define BLACK_KS 0x4
 #define BLACK_QS 0x8
 
+#define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
 typedef struct {
     Bitboard occupancies[3]; // 0 = white, 1 = black, 2 = both
     Bitboard pieces[12]; // one bitboard for each piece
     uint8_t squares[64]; 
 
-    int castling; // 1111 = KQkq, 1001 = Kq
+    int castling; // 1111 = qkQK, 1001 = qK
     int stm; // 0 for white, 1 for black
     int xstm;
     int ep_square;
