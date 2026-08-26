@@ -38,13 +38,19 @@ void parseFen(char* fen, Position* pos) {
         pos->squares[i] = PIECE_NONE;
     }
 
+    if (!fen) {
+        return;
+    }
+
     int square = 56;
     // pieces
-    while (*fen != ' ') {
+    while (*fen && *fen != ' ') {
         if ((*fen >= 'a' && *fen <= 'z') || (*fen >= 'A' && *fen <= 'Z')) {
             int piece = CHAR_TO_PIECE[(int)(*fen)];
-            SetBit(pos->pieces[piece], square);
-            pos->squares[square] = piece;
+            if (square >= 0 && square < 64) {
+                SetBit(pos->pieces[piece], square);
+                pos->squares[square] = piece;
+            }
             square++;
         } else if (*fen >= '1' && *fen <= '8') {
             square += (*fen) - '0';
@@ -66,7 +72,9 @@ void parseFen(char* fen, Position* pos) {
         pos->xstm = WHITE;
         fen++;
     } else {
-        printf("Invalid stm.\n");
+        printf("Invalid stm, defaulting to White's turn.\n");
+        pos->stm = WHITE;
+        pos->xstm = BLACK;
     }
 
     fen++;

@@ -3,6 +3,6 @@
 
 #include "position.h"
 
-void uciLoop(Position* pos);
+void uciLoop();
 
 #endif
