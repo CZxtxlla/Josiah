@@ -31,11 +31,16 @@ void parseGo(char* line, Position* pos) {
     int winc = 0, binc = 0;
     int movetime = -1;
 
-
-    line += 3; // skip "go "
+    line += 3;
 
     char* ptr = NULL;
 
+    if ((ptr = strstr(line, "depth"))) {
+        depth = atoi(ptr + 6);
+    }
+    if ((ptr = strstr(line, "movetime"))) {
+        movetime = atoi(ptr + 9);
+    }
     if ((ptr = strstr(line, "wtime"))) {
         wtime = atoi(ptr + 6);
     }
@@ -48,6 +53,30 @@ void parseGo(char* line, Position* pos) {
     if ((ptr = strstr(line, "binc"))) {
         binc = atoi(ptr + 5);
     }
+
+    int thinkingTime = -1;
+
+    if (movetime != -1) {
+        thinkingTime = movetime;
+    } else if (wtime != -1 && btime != -1) {
+        int timeRemaining = (pos->stm == WHITE) ? wtime : btime;
+        int increment = (pos->stm == WHITE) ? winc : binc;
+
+        thinkingTime = (timeRemaining / 20) + (increment / 2);
+
+        if (thinkingTime >= timeRemaining) {
+            thinkingTime = timeRemaining - 500;
+        }
+        if (thinkingTime < 0) {
+            thinkingTime = 100; // minimum 100 ms
+        }
+    }
+
+    if (depth == -1 && thinkingTime == -1) {
+        depth = 6;
+    }
+
+    iterativeDeepening(pos, depth, thinkingTime);
 }
 
 void parsePosition(char* line, Position* pos) {
@@ -101,7 +130,11 @@ void uciLoop() {
 
         } else if (!strncmp(line, "go", 2)) {
             parseGo(line, &pos);
-         } else if (!strncmp(line, "perft", 5)) {
+        } else if (!strncmp(line, "isready", 7)) {
+            printf("readyok\n");
+        } else if (!strncmp(line, "ucinewgame", 10)) {
+            parseFen(STARTPOS, &pos);
+        } else if (!strncmp(line, "perft", 5)) {
             strtok(line, " ");
             char* d = strtok(NULL, " ") ? : "5";
             char* fen = strtok(NULL, "\0") ? : STARTPOS;
@@ -113,6 +146,8 @@ void uciLoop() {
             parsePosition(line, &pos);
         } else if (!strncmp(line, "print", 5)) {
             printPosition(&pos);
+        } else if (!strncmp(line, "quit", 4)) {
+            break;
         }
     }
 }

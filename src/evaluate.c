@@ -9,7 +9,7 @@ int evaluateLegalPos(Position* pos) {
         white_score += PIECE_TO_SCORE[p_type % 6] * __builtin_popcountll(pos->pieces[p_type]);
     }
     for (int p_type = BLACK_PAWN; p_type <= BLACK_QUEEN; p_type++) {
-        white_score += PIECE_TO_SCORE[p_type % 6] * __builtin_popcountll(pos->pieces[p_type]);
+        white_score -= PIECE_TO_SCORE[p_type % 6] * __builtin_popcountll(pos->pieces[p_type]);
     }
 
     return (pos->stm == WHITE) ? white_score : -white_score;

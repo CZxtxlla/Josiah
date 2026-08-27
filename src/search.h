@@ -4,11 +4,12 @@
 #include "position.h"
 
 #define MAX_SEARCH_DEPTH 128
+#define INFINITY_SCORE 50000
 
 extern int timeLimit;
 
 typedef struct {
-    int nodes;
+    long long nodes;
     int ply;
     int abort;
     long long startTime;
@@ -17,6 +18,6 @@ typedef struct {
 
 int negaMax(Position* pos, int depth, int alpha, int beta, NodeState* state);
 
-void searchPosition(Position* pos, int searchTimeLimit);
+void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit);
 
 #endif
