@@ -26,7 +26,28 @@ Move parseMove(char* moves, Position* pos) {
 }
 
 void parseGo(char* line, Position* pos) {
+    int depth = -1;
+    int wtime = -1, btime = -1;
+    int winc = 0, binc = 0;
+    int movetime = -1;
 
+
+    line += 3; // skip "go "
+
+    char* ptr = NULL;
+
+    if ((ptr = strstr(line, "wtime"))) {
+        wtime = atoi(ptr + 6);
+    }
+    if ((ptr = strstr(line, "btime"))) {
+        btime = atoi(ptr + 6);
+    }
+    if ((ptr = strstr(line, "winc"))) {
+        winc = atoi(ptr + 5);
+    }
+    if ((ptr = strstr(line, "binc"))) {
+        binc = atoi(ptr + 5);
+    }
 }
 
 void parsePosition(char* line, Position* pos) {
@@ -78,7 +99,9 @@ void uciLoop() {
             printf("id author Charles Zitella\n");
             printf("uciok\n");
 
-        } else if (!strncmp(line, "perft", 5)) {
+        } else if (!strncmp(line, "go", 2)) {
+            parseGo(line, &pos);
+         } else if (!strncmp(line, "perft", 5)) {
             strtok(line, " ");
             char* d = strtok(NULL, " ") ? : "5";
             char* fen = strtok(NULL, "\0") ? : STARTPOS;
