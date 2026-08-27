@@ -10,6 +10,8 @@ typedef uint16_t Move;
 // 0-5 bits for from square, 6-11 bits for to square, 12-15 bits for flag 
 /// https://chessprogramming.org/Encoding_Moves#information-required for codes (remaining 4 bits)
 
+#define NULL_MOVE 0
+
 // move flags
 #define QUIET 0b0000
 #define DOUBLE_PUSH 0b0001
@@ -60,9 +62,16 @@ static inline void printMove(Move m) {
     int to = MoveTo(m);
     int rankTo = Rank(to);
     int fileTo = File(to);
-    int t = IsPromo(m) ? PromoType(m) : ' ';
+    
+    if (IsPromo(m)) {
+        char promoChar = "nrbq"[MoveFlag(m) & 0x3];
+        printf("%c%d%c%d%c", fileFrom + 'a', rankFrom + 1, fileTo + 'a', rankTo + 1, promoChar);
 
-    printf("%c%d%c%d%c", (char) fileFrom + 'a', rankFrom + 1, (char) fileTo + 'a', rankTo + 1, t);
+    } else {
+        printf("%c%d%c%d", fileFrom + 'a', rankFrom + 1, fileTo + 'a', rankTo + 1);
+    }
 }
+
+char* moveToStr(Move m);
 
 #endif

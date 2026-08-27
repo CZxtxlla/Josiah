@@ -1,6 +1,7 @@
 #include "search.h"
 #include "evaluate.h"
 #include "movegen.h"
+#include <limits.h>
 
 
 int negaMax(Position* pos, int depth, int alpha, int beta, NodeState* state) {
@@ -49,9 +50,9 @@ Move searchPosition(Position* pos, int depth) {
     state.nodes = 0;
 
     Move bestRootMove = 0;
-
-    int alpha = -MATE_SCORE;
-    int beta = MATE_SCORE;
+    int maxScore = INT_MIN;
+    int alpha = INT_MIN;
+    int beta = INT16_MAX;
 
     MoveList legalMoves;
     generateLegalMoves(pos, &legalMoves);
@@ -65,8 +66,8 @@ Move searchPosition(Position* pos, int depth) {
         state.ply--;
         unmakeMove(pos, legalMoves.moves[i], &undo);
 
-        if (score > alpha) {
-            alpha = score;
+        if (score > maxScore) {
+            maxScore = score;
             bestRootMove = legalMoves.moves[i];
         }
     }

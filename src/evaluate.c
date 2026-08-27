@@ -1,5 +1,7 @@
 #include "evaluate.h"
 
+const int PIECE_TO_SCORE[5] = {100, 300, 320, 500, 900};
+
 int evaluateLegalPos(Position* pos) {
     // from perspective of stm
     int white_score = 0;
