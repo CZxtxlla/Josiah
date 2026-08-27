@@ -5,6 +5,8 @@
 #include "move.h"
 #include "position.h"
 
+int isSquareAttacked(Position* pos, int square, int attackerColour);
+
 int moveIsLegal(Position* pos, Move move);
 int moveWasLegal(Position* pos); // check if king is in check
 

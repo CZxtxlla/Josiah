@@ -4,7 +4,8 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <sys/time.h>
+
+#include "search.h"
 
 #define VERSION "0.0"
 
