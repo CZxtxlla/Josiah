@@ -3,6 +3,7 @@
 #include "movegen.h"
 #include <limits.h>
 #include "utils.h"
+#include "movepicker.h"
 
 int timeLimit = 100000000;
 
@@ -37,6 +38,8 @@ int negaMax(Position* pos, int depth, int alpha, int beta, NodeState* state) {
     }
 
     int bestValue = -INFINITY_SCORE;
+
+    //orderMoves(&legalMoves, pos);
 
     Undo undo;
     for (int i = 0; i < legalMoves.size; i++) {
@@ -85,6 +88,7 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
         return;
     }
 
+    //orderMoves(&legalMoves, pos);
     Move bestMoveSoFar = legalMoves.moves[0];
 
     Undo undo;
@@ -92,7 +96,7 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
 
         int alpha = -INFINITY_SCORE;
         int beta = INFINITY_SCORE;
-        Move bestRootMoveThisDepth = 0;
+        Move bestRootMoveThisDepth = legalMoves.moves[0];
 
         for (int i = 0; i < legalMoves.size; i++) {
             makeMove(pos, legalMoves.moves[i], &undo);
