@@ -13,10 +13,10 @@ typedef struct {
     int ply;
     int abort;
     long long startTime;
-} NodeState;
+} SearchState;
 
 
-int negaMax(Position* pos, int depth, int alpha, int beta, NodeState* state);
+int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state);
 
 void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit);
 

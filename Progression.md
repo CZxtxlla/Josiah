@@ -12,3 +12,8 @@ SPRT: llr 2.97 (101.0%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 There are a lot of draws due to threefold repetition, which should be solved once I implement the transposition table
 
+Version 0.0.3 adds very basic MVV-LVA move ordering, as well as fixes major bug with evaluation. Here is the result of sprt with version 0.0.2:
+
+Version 0.0.4 is planned to add quiescent search.
+
+Version 0.0.5 is planned to add transposition table.

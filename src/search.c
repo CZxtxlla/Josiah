@@ -7,8 +7,68 @@
 
 int timeLimit = 100000000;
 
+int quiescence(Position* pos, int alpha, int beta, SearchState* state) {
+    state->nodes++;
 
-int negaMax(Position* pos, int depth, int alpha, int beta, NodeState* state) {
+    if (state->nodes % 2048 == 0) {
+        if ((getTimeMS() - state->startTime) >= timeLimit) {
+            state->abort = 1;
+        }
+    }
+
+    if (state->abort) {
+        return 0;
+    }
+
+    int staticEval = evaluateLegalPos(pos);
+    int bestValue = staticEval;
+    if (bestValue >= beta) {
+        return bestValue;
+    }
+    if (bestValue > alpha) {
+        alpha = bestValue;
+    }
+
+    MoveList noisyMoves;
+    noisyMoves.size = 0;
+    generateNoisyMoves(pos, &noisyMoves);
+
+    orderMoves(&noisyMoves, pos);
+
+    Undo undo;
+    for (int i = 0; i < noisyMoves.size; i++) {
+        makeMove(pos, noisyMoves.moves[i], &undo);
+         if (!moveWasLegal(pos)) {
+            unmakeMove(pos, noisyMoves.moves[i], &undo);
+            continue;
+        }
+        state->ply++;
+        int score = -quiescence(pos, -beta, -alpha, state);
+        state->ply--;
+        unmakeMove(pos, noisyMoves.moves[i], &undo);
+
+        if (state->abort) {
+            return 0;
+        }
+
+        if (score > bestValue) {
+            bestValue = score;
+        }
+
+        if (score > alpha) {
+            alpha = score;
+        }
+
+        if (alpha >= beta) {
+            // cutoff
+            break;
+        }
+    }
+    return bestValue;
+}
+
+
+int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     state->nodes++;
 
     if (state->nodes % 2048 == 0) {
@@ -22,7 +82,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, NodeState* state) {
     }
 
     if (depth == 0) {
-        return evaluateLegalPos(pos);
+        return evaluateLegalPos(pos); //quiescence(pos, alpha, beta, state);
     }
 
     MoveList legalMoves;
@@ -39,7 +99,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, NodeState* state) {
 
     int bestValue = -INFINITY_SCORE;
 
-    //orderMoves(&legalMoves, pos);
+    orderMoves(&legalMoves, pos);
 
     Undo undo;
     for (int i = 0; i < legalMoves.size; i++) {
@@ -71,7 +131,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, NodeState* state) {
 }
 
 void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
-    NodeState state;
+    SearchState state;
     state.ply = 0;
     state.nodes = 0;
     state.startTime = getTimeMS();
@@ -88,7 +148,7 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
         return;
     }
 
-    //orderMoves(&legalMoves, pos);
+    orderMoves(&legalMoves, pos);
     Move bestMoveSoFar = legalMoves.moves[0];
 
     Undo undo;

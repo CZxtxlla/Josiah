@@ -94,7 +94,7 @@ const int KING_EG_TABLE[64] = {
 const int* mgTablePointer[] = {PAWN_MG_TABLE, KNIGHT_TABLE, BISHOP_TABLE, ROOK_TABLE, QUEEN_TABLE, KING_MG_TABLE};
 const int* egTablePointer[] = {PAWN_EG_TABLE, KNIGHT_TABLE, BISHOP_TABLE, ROOK_TABLE, QUEEN_TABLE, KING_EG_TABLE};
 
-const int PIECE_TO_SCORE[5] = {100, 300, 320, 500, 900};
+const int PIECE_TO_SCORE[6] = {100, 300, 320, 500, 900, 0};
 
 // https://chessprogramming.org/Tapered_Eval
 int gamePhase(Position* pos) {
@@ -122,7 +122,7 @@ int evaluateLegalPos(Position* pos) {
         }
         int pieceIndex = ptype % 6;
         int pieceColor = ptype / 6;
-        int flipped = (pos->stm == WHITE) ? sq ^ 56 : sq;
+        int flipped = (pieceColor == WHITE) ? sq ^ 56 : sq;
 
         int mgScore = mgTablePointer[pieceIndex][flipped];
         int egScore = egTablePointer[pieceIndex][flipped];

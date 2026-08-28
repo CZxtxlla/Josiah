@@ -5,7 +5,7 @@
 
 #define MATE_SCORE 999999
 
-extern const int PIECE_TO_SCORE[5];
+extern const int PIECE_TO_SCORE[6];
 
 int evaluateLegalPos(Position* pos);
 
