@@ -196,7 +196,7 @@ char* moveToStr(Move m) {
     int to = MoveTo(m);
 
     if(IsPromo(m)) {
-        char promoChar = "nrbq"[MoveFlag(m) & 0x3];
+        char promoChar = "nbrq"[MoveFlag(m) & 0x3];
         sprintf(buffer, "%s%s%c", SQ_TO_COORD[from], SQ_TO_COORD[to], promoChar);
     } else {
         sprintf(buffer, "%s%s", SQ_TO_COORD[from], SQ_TO_COORD[to]);

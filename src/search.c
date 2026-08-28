@@ -82,7 +82,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     }
 
     if (depth == 0) {
-        return evaluateLegalPos(pos); //quiescence(pos, alpha, beta, state);
+        return quiescence(pos, alpha, beta, state);
     }
 
     MoveList legalMoves;
