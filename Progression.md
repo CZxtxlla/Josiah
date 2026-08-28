@@ -45,3 +45,11 @@ SPRT: llr 2.97 (100.9%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
 Version 0.0.5 is planned to add transposition table.
+
+
+
+### Future Improvements
+
+These are just some performance enhancements that I noticed in other engines that I would like to implement eventually.
+- PEXT instruction magic bitboards.
+- Bucketed TT

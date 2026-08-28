@@ -23,3 +23,46 @@ void initZobrist() {
 
     ZOBRIST_SIDE = random_U64();
 }
+
+// get the hash of a position
+uint64_t ZobristHash(Position* pos) {
+    uint64_t hash = 0ULL;
+
+    for (int pType = WHITE_PAWN; pType <= BLACK_KING; pType++) {
+        Bitboard pieces = pos->pieces[pType];
+        while (pieces) {
+            hash ^= ZOBRIST_PIECES[pType][poplsb(&pieces)];
+        }
+    }
+
+    if (pos->ep_square) {
+        hash ^= ZOBRIST_EP[pos->ep_square % 8];
+    }
+
+    hash ^= ZOBRIST_CASTLE[pos->castling];
+
+    if (pos->stm) {
+        hash ^= ZOBRIST_SIDE;
+    }
+
+    return hash;
+}
+
+// used for efficient prefetch
+uint64_t nextHash(Position* pos, Move m) {
+    if (!m) {
+        return pos->hash ^ZOBRIST_SIDE;
+    }
+
+    int from = MoveFrom(m);
+    int to = MoveTo(m);
+    int movingType = pos->squares[from];
+
+    uint64_t newHash = pos->hash ^ ZOBRIST_SIDE ^ ZOBRIST_PIECES[movingType][from] ^ ZOBRIST_PIECES[movingType][to];
+
+    if (pos->squares[to] != PIECE_NONE) {
+        newHash ^= ZOBRIST_PIECES[pos->squares[to]][to];
+    }
+
+    return newHash;
+}
