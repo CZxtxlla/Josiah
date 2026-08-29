@@ -84,7 +84,17 @@ Elo difference: 40.9 +/- 21.7, LOS: 100.0 %, DrawRatio: 25.3 %
 SPRT: llr 2.96 (100.4%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.0.7 is planned to add PVS. As of this version I am switching testing to a hash size of 64 MB from 256 MB.
+Version 0.0.7 swaps legal move generation for pseudolegal in negamax. As of this version I am switching testing to a hash size of 64 MB from 256 MB. Here is the result of sprt with version 0.0.6.2 (with hash size 64):
+
+Score of Josiah v0.0.7 vs Josiah v0.0.6.2_64: 682 - 581 - 439  [0.530] 1702
+...      Josiah v0.0.7 playing White: 394 - 249 - 208  [0.585] 851
+...      Josiah v0.0.7 playing Black: 288 - 332 - 231  [0.474] 851
+...      White vs Black: 726 - 537 - 439  [0.556] 1702
+Elo difference: 20.6 +/- 14.2, LOS: 99.8 %, DrawRatio: 25.8 %
+SPRT: llr 2.97 (100.9%), lbound -2.94, ubound 2.94 - H1 was accepted
+
+
+Version 0.0.8 is planned to add PVS
 
 ### Future Improvements
 
