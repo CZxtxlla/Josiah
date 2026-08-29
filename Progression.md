@@ -94,7 +94,17 @@ Elo difference: 20.6 +/- 14.2, LOS: 99.8 %, DrawRatio: 25.8 %
 SPRT: llr 2.97 (100.9%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.0.8 is planned to add PVS
+Version 0.0.8 adds PVS. Here is the result of sprt with version 0.0.7:
+
+Score of Josiah v0.0.8 vs Josiah v0.0.7: 296 - 209 - 167  [0.565] 672
+...      Josiah v0.0.8 playing White: 186 - 76 - 75  [0.663] 337
+...      Josiah v0.0.8 playing Black: 110 - 133 - 92  [0.466] 335
+...      White vs Black: 319 - 186 - 167  [0.599] 672
+Elo difference: 45.2 +/- 22.9, LOS: 100.0 %, DrawRatio: 24.9 %
+SPRT: llr 2.98 (101.2%), lbound -2.94, ubound 2.94 - H1 was accepted
+
+
+Version 0.0.9 is planned to add NMP, Reverse Futility pruning, and LMR
 
 ### Future Improvements
 
