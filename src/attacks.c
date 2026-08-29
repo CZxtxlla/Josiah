@@ -280,12 +280,12 @@ uint64_t findMagic(int square, int index_bits, int is_bishop) {
         memset(used_attacks, 0, sizeof(used_attacks));
 
         int failed = 0;
-        for (int i = 0; !failed && i < subsets; i++) {
-            int index = (occupancies[i] * candidate) >> (64 - index_bits);
+        for (int j = 0; !failed && j < subsets; i++) {
+            int index = (occupancies[j] * candidate) >> (64 - index_bits);
 
             if (!used_attacks[index]) {
-                used_attacks[index] = attacks[i];
-            } else if (used_attacks[index] != attacks[i]) {
+                used_attacks[index] = attacks[j];
+            } else if (used_attacks[index] != attacks[j]) {
                 failed = 1;
             }
         }
@@ -321,7 +321,7 @@ void initBishopAttacks() {
     // fill attacks table
     for (int sq = 0; sq < 64; sq++) {
         int bits = BISHOP_BITS[sq];
-        for (int i = 0; i < (1ULL << bits); i++) {
+        for (uint64_t i = 0; i < (1ULL << bits); i++) {
             Bitboard occupancy = setOccupancy(i, bits, BISHOP_MASKS[sq]);
             BISHOP_ATTACKS[sq][magicIndex(BISHOP_MAGICS[sq], occupancy, bits)] = bishopAttacksCast(sq, occupancy);
         }
@@ -331,7 +331,7 @@ void initBishopAttacks() {
 void initRookAttacks() {
     for (int sq = 0; sq < 64; sq++) {
         int bits = ROOK_BITS[sq];
-        for (int i = 0; i < (1ULL << bits); i++) {
+        for (uint64_t i = 0; i < (1ULL << bits); i++) {
             Bitboard occupancy = setOccupancy(i, bits, ROOK_MASKS[sq]);
             ROOK_ATTACKS[sq][magicIndex(ROOK_MAGICS[sq], occupancy, bits)] = rookAttacksCast(sq, occupancy);
         }

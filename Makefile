@@ -1,18 +1,25 @@
 CC = gcc
-CFLAGS = -Wall -g -O3
+CFLAGS = -Wall -Wextra -Wshadow -std=gnu11
 
 SOURCES = $(wildcard src/*.c)
 OBJECTS = $(SOURCES:.c=.o)
 
-all: Josiah
+all: release
+
+release: CFLAGS += -O3 -march=native -flto -DNDEBUG
+release: LDFLAGS += -flto
+release: Josiah
+
+debug: CFLAGS += -g -O0
+debug: Josiah
 
 Josiah: $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-.PHONY: clean
+.PHONY: all release debug clean
 
 clean:
 	rm -f src/*.o Josiah

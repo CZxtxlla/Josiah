@@ -11,5 +11,6 @@ My main references are the engines Ethereal and Berserk. (My movegen code is hea
 https://www.youtube.com/channel/UCB9-prLkPwgvlKKqDgXhsMQ/videos)
 
 Resources I have used:
-https://analog-hors.github.io/site/magic-bitboards/
-Chess Programming Wiki
+- Chess Programming Wiki
+- https://analog-hors.github.io/site/magic-bitboards/
+- https://chessprogramming.org/Search_Progression (using this as a kind of roadmap to progress through)
