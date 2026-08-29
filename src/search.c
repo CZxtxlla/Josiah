@@ -56,7 +56,7 @@ int quiescence(Position* pos, int alpha, int beta, SearchState* state) {
     noisyMoves.size = 0;
     generateNoisyMoves(pos, &noisyMoves);
 
-    orderMoves(&noisyMoves, pos);
+    orderMoves(&noisyMoves, pos, 0);
 
     Undo undo;
     for (int i = 0; i < noisyMoves.size; i++) {
@@ -144,7 +144,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     int bestMove = 0; // used for tt storing
     int originalAlpha = alpha; // used for tt storing
 
-    orderMoves(&legalMoves, pos);
+    orderMoves(&legalMoves, pos, ttMove);
 
     Undo undo;
     for (int i = 0; i < legalMoves.size; i++) {
@@ -204,7 +204,7 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
         return;
     }
 
-    orderMoves(&legalMoves, pos);
+    orderMoves(&legalMoves, pos, 0);
     Move bestMoveSoFar = legalMoves.moves[0];
 
     Undo undo;

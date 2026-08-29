@@ -3,8 +3,8 @@
 
 #include "move.h"
 
-int scoreMove(Move m, Position* pos);
+int scoreMove(Move m, Position* pos, Move ttMove);
 
-void orderMoves(MoveList* movesl, Position* pos);
+void orderMoves(MoveList* movesl, Position* pos, Move ttMove);
 
 #endif

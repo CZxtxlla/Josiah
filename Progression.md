@@ -63,6 +63,7 @@ Score of Josiah v0.0.6 vs Josiah v0.0.5: 115 - 59 - 166  [0.582] 340
 Elo difference: 57.8 +/- 26.4, LOS: 100.0 %, DrawRatio: 48.8 %
 SPRT: llr 2.98 (101.1%), lbound -2.94, ubound 2.94 - H1 was accepted
 
+Version 0.0.6.1 adds hash moves to move ordering.
 
 
 ### Future Improvements

@@ -1,7 +1,10 @@
 #include "movepicker.h"
 #include "evaluate.h"
 
-int scoreMove(Move m, Position* pos) {
+int scoreMove(Move m, Position* pos, Move ttMove) {
+    if (m == ttMove) {
+        return 10000;
+    }
     if (IsCapture(m)) {
         int capturer = pos->squares[MoveFrom(m)] % 6;
         int captured = IsEP(m) ? PAWN : (pos->squares[MoveTo(m)] % 6);
@@ -12,11 +15,11 @@ int scoreMove(Move m, Position* pos) {
     }
 }
 
-void orderMoves(MoveList* movesl, Position* pos) {
+void orderMoves(MoveList* movesl, Position* pos, Move ttMove) {
     int scores[256];
 
     for (int i = 0; i < movesl->size; i++) {
-        scores[i] = scoreMove(movesl->moves[i], pos);
+        scores[i] = scoreMove(movesl->moves[i], pos, ttMove);
     }
 
     for (int i = 0; i < movesl->size - 1; i++) {
