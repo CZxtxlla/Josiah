@@ -280,7 +280,7 @@ uint64_t findMagic(int square, int index_bits, int is_bishop) {
         memset(used_attacks, 0, sizeof(used_attacks));
 
         int failed = 0;
-        for (int j = 0; !failed && j < subsets; i++) {
+        for (int j = 0; !failed && j < subsets; j++) {
             int index = (occupancies[j] * candidate) >> (64 - index_bits);
 
             if (!used_attacks[index]) {
