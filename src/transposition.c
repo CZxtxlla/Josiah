@@ -32,7 +32,7 @@ void ttClear() {
     memset(TTTable, 0, sizeof(TTEntry) * entries);
 }
 
-int ttStore(uint64_t hash, uint8_t depth, Move move, uint32_t score, uint8_t flag) {
+int ttStore(uint64_t hash, uint8_t depth, Move move, int32_t score, uint8_t flag) {
     int index = hash % entries;
     int overwrite = 0;
     if (TTTable[index].hash != hash) {
@@ -47,7 +47,7 @@ int ttStore(uint64_t hash, uint8_t depth, Move move, uint32_t score, uint8_t fla
     return overwrite;
 }
 
-int ttProbe(uint64_t hash, uint8_t depth, Move* move, uint32_t* score, uint8_t* flag) {
+int ttProbe(uint64_t hash, uint8_t depth, Move* move, int32_t* score, uint8_t* flag) {
     int index = hash % entries;
     TTEntry entry = TTTable[index];
     if (entry.hash != hash) {

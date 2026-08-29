@@ -21,6 +21,11 @@ int quiescence(Position* pos, int alpha, int beta, SearchState* state) {
         return 0;
     }
 
+    if (state->ply >= 128) {
+        // arbitrary, potentially could remove
+        return evaluateLegalPos(pos);
+    }
+
     int staticEval = evaluateLegalPos(pos);
     int bestValue = staticEval;
     if (bestValue >= beta) {
@@ -86,7 +91,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         return quiescence(pos, alpha, beta, state);
     }
 
-    uint32_t ttScore = 0;
+    int32_t ttScore = 0;
     Move ttMove = 0; 
     uint8_t ttFlag = 0;
 
@@ -194,15 +199,21 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
             int score = -negaMax(pos, j - 1, -beta, -alpha, &state);
             state.ply--;
             unmakeMove(pos, legalMoves.moves[i], &undo);
+            
+            if (state.abort) {
+                break; // don't use partial results
+            }
 
             if (score > alpha) {
                 alpha = score;
                 bestRootMoveThisDepth = legalMoves.moves[i];
             }
         }
+
         if (state.abort) {
-            break; // don't use partial results
+            break;
         }
+
         bestMoveSoFar = bestRootMoveThisDepth;
         long long duration = getTimeMS() - state.startTime;
         printf("info depth %d score cp %d time %lld nodes %lld\n", j, alpha, duration, state.nodes);

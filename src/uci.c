@@ -113,8 +113,6 @@ void parsePosition(char* line, Position* pos) {
 
         makeMove(pos, m, &undo);
     }
-
-    pos->hash = ZobristHash(pos); // initialize zobrist hash
 }
 
 void uciLoop() {

@@ -35,7 +35,7 @@ uint64_t ZobristHash(Position* pos) {
         }
     }
 
-    if (pos->ep_square) {
+    if (pos->ep_square != -1) {
         hash ^= ZOBRIST_EP[pos->ep_square % 8];
     }
 

@@ -1,4 +1,5 @@
 #include "position.h"
+#include "zobrist.h"
 #include <string.h>
 
 const int CHAR_TO_PIECE[] = {
@@ -125,4 +126,6 @@ void parseFen(char* fen, Position* pos) {
         pos->occupancies[BLACK] |= pos->pieces[p];
         pos->occupancies[BOTH] |= pos->pieces[p];
     }
+
+    pos->hash = ZobristHash(pos); // initialize zobrist hash
 }
