@@ -44,7 +44,24 @@ Elo difference: 49.4 +/- 24.2, LOS: 100.0 %, DrawRatio: 53.3 %
 SPRT: llr 2.97 (100.9%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.0.5 is planned to add transposition table.
+Version 0.0.5 adds a transposition table. Here is the result of sprt with version 0.0.4:
+
+Score of Josiah v0.0.5 vs Josiah v0.0.4: 147 - 96 - 341  [0.544] 584
+...      Josiah v0.0.5 playing White: 89 - 37 - 167  [0.589] 293
+...      Josiah v0.0.5 playing Black: 58 - 59 - 174  [0.498] 291
+...      White vs Black: 148 - 95 - 341  [0.545] 584
+Elo difference: 30.4 +/- 18.1, LOS: 99.9 %, DrawRatio: 58.4 %
+SPRT: llr 2.99 (101.6%), lbound -2.94, ubound 2.94 - H1 was accepted
+
+
+Version 0.0.6 adds repetition checking. Here is the result of sprt with version 0.0.5:
+
+Score of Josiah v0.0.6 vs Josiah v0.0.5: 115 - 59 - 166  [0.582] 340
+...      Josiah v0.0.6 playing White: 73 - 26 - 71  [0.638] 170
+...      Josiah v0.0.6 playing Black: 42 - 33 - 95  [0.526] 170
+...      White vs Black: 106 - 68 - 166  [0.556] 340
+Elo difference: 57.8 +/- 26.4, LOS: 100.0 %, DrawRatio: 48.8 %
+SPRT: llr 2.98 (101.1%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
 

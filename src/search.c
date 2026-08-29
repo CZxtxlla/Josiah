@@ -8,6 +8,19 @@
 
 int timeLimit = 100000000;
 
+int isRepetition(Position* pos) {
+    if (pos->half_moves < 4) {
+        return 0;
+    }
+
+    for (int i = pos->historyPly - 2; i >= pos->historyPly - pos->half_moves; i -=2) {
+        if (pos->history[i] == pos->hash) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int quiescence(Position* pos, int alpha, int beta, SearchState* state) {
     state->nodes++;
 
@@ -18,6 +31,10 @@ int quiescence(Position* pos, int alpha, int beta, SearchState* state) {
     }
 
     if (state->abort) {
+        return 0;
+    }
+
+    if (isRepetition(pos) || pos->half_moves >= 100) {
         return 0;
     }
 
@@ -84,6 +101,10 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     }
 
     if (state->abort) {
+        return 0;
+    }
+
+    if (isRepetition(pos) || pos->half_moves >= 100) {
         return 0;
     }
 

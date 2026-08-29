@@ -28,6 +28,9 @@ typedef struct {
     int full_moves;
 
     uint64_t hash; // zobrist hash
+
+    uint64_t history[2048];
+    int historyPly;
 } Position;
 
 typedef struct {

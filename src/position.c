@@ -128,4 +128,5 @@ void parseFen(char* fen, Position* pos) {
     }
 
     pos->hash = ZobristHash(pos); // initialize zobrist hash
+    pos->historyPly = 0;
 }

@@ -19,12 +19,17 @@ void makeMove(Position* pos, Move move, Undo* undo) {
     int piece = pos->squares[from];
     int captured = IsEP(move) ? Piece(PAWN, pos->xstm) : pos->squares[to];
 
+    pos->history[pos->historyPly] = pos->hash;
+    pos->historyPly++;
+
     undo->capture_piece = captured;
     undo->ep_square = pos->ep_square;
     undo->castling = pos->castling;
     undo->movedPiece = piece;
     undo->hash = pos->hash;
     undo->half_moves = pos->half_moves;
+
+    pos->half_moves++;
 
     if (piece % 6 == 0) {
         pos->half_moves = 0;
@@ -137,6 +142,8 @@ void unmakeMove(Position* pos, Move move, Undo* undo) {
     pos->ep_square = undo->ep_square;
     pos->hash = undo->hash;
     pos->half_moves = undo->half_moves;
+
+    pos->historyPly--;
 
     pos->stm ^= 1;
     pos->xstm ^= 1;
