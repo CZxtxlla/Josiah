@@ -60,9 +60,7 @@ int quiescence(Position* pos, int alpha, int beta, SearchState* state) {
 
     Undo undo;
     for (int i = 0; i < noisyMoves.size; i++) {
-        makeMove(pos, noisyMoves.moves[i], &undo);
-         if (!moveWasLegal(pos)) {
-            unmakeMove(pos, noisyMoves.moves[i], &undo);
+        if (!makeMovePseudo(pos, noisyMoves.moves[i], &undo)) {
             continue;
         }
         state->ply++;
@@ -128,31 +126,26 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     }
 
 
-    MoveList legalMoves;
-    generateLegalMoves(pos, &legalMoves);
+    MoveList pseudoMoves;
+    generatePseudoMoves(pos, &pseudoMoves);
 
-    if (legalMoves.size == 0) {
-        // checkmate or stalemate
-        int kingsq = __builtin_ctzll(pos->pieces[(pos->stm == WHITE) ? WHITE_KING : BLACK_KING]);
-        if (isSquareAttacked(pos, kingsq, pos->xstm)) {
-            return -MATE_SCORE + state->ply;
-        }
-        return 0; // stalemate
-    }
-
+    int legalMovesPlayed = 0;
     int bestValue = -INFINITY_SCORE;
     int bestMove = 0; // used for tt storing
     int originalAlpha = alpha; // used for tt storing
 
-    orderMoves(&legalMoves, pos, ttMove);
+    orderMoves(&pseudoMoves, pos, ttMove);
 
     Undo undo;
-    for (int i = 0; i < legalMoves.size; i++) {
-        makeMove(pos, legalMoves.moves[i], &undo);
+    for (int i = 0; i < pseudoMoves.size; i++) {
+        if (!makeMovePseudo(pos, pseudoMoves.moves[i], &undo)) {
+            continue;
+        }
+        legalMovesPlayed++;
         state->ply++;
         int score = -negaMax(pos, depth - 1, -beta, -alpha, state);
         state->ply--;
-        unmakeMove(pos, legalMoves.moves[i], &undo);
+        unmakeMove(pos, pseudoMoves.moves[i], &undo);
 
         if (state->abort) {
             return 0;
@@ -160,7 +153,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
 
         if (score > bestValue) {
             bestValue = score;
-            bestMove = legalMoves.moves[i];
+            bestMove = pseudoMoves.moves[i];
         }
 
         if (score > alpha) {
@@ -171,7 +164,15 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
             // cutoff
             break;
         }
+    }
 
+    if (legalMovesPlayed == 0) {
+        // checkmate or stalemate
+        int kingsq = __builtin_ctzll(pos->pieces[(pos->stm == WHITE) ? WHITE_KING : BLACK_KING]);
+        if (isSquareAttacked(pos, kingsq, pos->xstm)) {
+            return -MATE_SCORE + state->ply;
+        }
+        return 0; // stalemate
     }
 
     uint8_t flag;

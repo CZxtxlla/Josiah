@@ -39,8 +39,14 @@ static inline void addMove(MoveList* list, Move move) {
     list->moves[list->size++] = move;
 }
 
+int isSquareAttacked(Position* pos, int square, int attackerColour);
+
+int moveIsLegal(Position* pos, Move move);
+int moveWasLegal(Position* pos); // check if king is in check
+
 void makeMove(Position* pos, Move move, Undo* undo);
 void unmakeMove(Position* pos, Move move, Undo* undo);
+int makeMovePseudo(Position* pos, Move move, Undo* undo);
 
 #define EncodeMove(from, to, flag) (from) | ((to) << 6) | ((flag << 12))
 #define MoveFrom(move) (move & 63)

@@ -1,5 +1,6 @@
 #include "move.h"
 #include "zobrist.h"
+#include "attacks.h"
 
 const int castlingRights[64] = {
     13, 15, 15, 15, 12, 15, 15, 14,
@@ -11,6 +12,66 @@ const int castlingRights[64] = {
     15, 15, 15, 15, 15, 15, 15, 15,
      7, 15, 15, 15,  3, 15, 15, 11
 };
+
+int isSquareAttacked(Position* pos, int square, int attackerColour) {
+
+    // pawns (pawn can only be attacked from square )
+    if (attackerColour == WHITE) {
+        if (((1ULL << square) >> 7) & ~A_FILE & pos->pieces[WHITE_PAWN]) {
+            return 1;
+        } 
+        if (((1ULL << square) >> 9) & ~H_FILE & pos->pieces[WHITE_PAWN]) {
+            return 1;
+        } 
+    }
+    if (attackerColour == BLACK) {
+        if (((1ULL << square) << 7) & ~H_FILE & pos->pieces[BLACK_PAWN]) {
+            return 1;
+        } 
+        if (((1ULL << square) << 9) & ~A_FILE & pos->pieces[BLACK_PAWN]) {
+            return 1;
+        } 
+    }
+
+    // knights
+    if (getKnightAttacks(square) & ((attackerColour == WHITE) ? pos->pieces[WHITE_KNIGHT] : pos->pieces[BLACK_KNIGHT])) {
+        return 1;
+    }
+    // king
+    if (getKingAttacks(square) & ((attackerColour == WHITE) ? pos->pieces[WHITE_KING] : pos->pieces[BLACK_KING])) {
+        return 1;
+    }
+    // bishops / queens
+    if (getBishopAttacks(square, pos->occupancies[BOTH]) & (attackerColour == WHITE ? (pos->pieces[WHITE_BISHOP] | pos->pieces[WHITE_QUEEN]) : (pos->pieces[BLACK_BISHOP] | pos->pieces[BLACK_QUEEN]))) {
+        return 1;
+    }
+
+    // rooks / queens
+    if (getRookAttacks(square, pos->occupancies[BOTH]) & (attackerColour == WHITE ? (pos->pieces[WHITE_ROOK] | pos->pieces[WHITE_QUEEN]) : (pos->pieces[BLACK_ROOK] | pos->pieces[BLACK_QUEEN]))) {
+        return 1;
+    }
+
+    return 0; // not attacked
+}
+
+int moveWasLegal(Position* pos) {
+
+    Bitboard king = pos->pieces[(pos->xstm == WHITE) ? WHITE_KING : BLACK_KING];
+    int kingsq = __builtin_ctzll(king);
+    return !isSquareAttacked(pos, kingsq, pos->stm);
+}
+
+int moveIsLegal(Position* pos, Move move) {
+    Undo undo;
+    makeMove(pos, move, &undo);
+    if (moveWasLegal(pos)) {
+        unmakeMove(pos, move, &undo);
+        return 1;
+    } else {
+        unmakeMove(pos, move, &undo);
+        return 0;
+    }
+}
 
 void makeMove(Position* pos, Move move, Undo* undo) {
     // only for fully legal moves (doesn't check king in check)
@@ -235,4 +296,14 @@ char* moveToStr(Move m) {
     }
 
     return buffer;
+}
+
+int makeMovePseudo(Position* pos, Move move, Undo* undo) {
+    makeMove(pos, move, undo);
+    if (moveWasLegal(pos)) {
+        return 1;
+    } else {
+        unmakeMove(pos, move, undo);
+        return 0;
+    }
 }
