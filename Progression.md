@@ -63,7 +63,14 @@ Score of Josiah v0.0.6 vs Josiah v0.0.5: 115 - 59 - 166  [0.582] 340
 Elo difference: 57.8 +/- 26.4, LOS: 100.0 %, DrawRatio: 48.8 %
 SPRT: llr 2.98 (101.1%), lbound -2.94, ubound 2.94 - H1 was accepted
 
-Version 0.0.6.1 adds hash moves to move ordering.
+Version 0.0.6.1 adds hash moves to move ordering. As of this version I am switching testing to a hash size of 64 MB from 256 MB. Here is the result of sprt with version 0.0.6 (with 256 MB hash):
+
+Score of Josiah v0.0.6.1 vs Josiah v0.0.6: 129 - 51 - 59  [0.663] 239
+...      Josiah v0.0.6.1 playing White: 72 - 17 - 31  [0.729] 120
+...      Josiah v0.0.6.1 playing Black: 57 - 34 - 28  [0.597] 119
+...      White vs Black: 106 - 74 - 59  [0.567] 239
+Elo difference: 117.7 +/- 39.8, LOS: 100.0 %, DrawRatio: 24.7 %
+SPRT: llr 2.98 (101.2%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
 ### Future Improvements

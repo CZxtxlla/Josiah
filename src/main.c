@@ -9,7 +9,7 @@ int main() {
     printf("Initializing engine...\n");
     initAttacks();
     initZobrist();
-    ttInit(256); // default 256 MB
+    ttInit(64); // default 64 MB
     printf("Engine initialized.\n");
     uciLoop();
     

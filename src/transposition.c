@@ -54,11 +54,12 @@ int ttProbe(uint64_t hash, uint8_t depth, Move* move, int32_t* score, uint8_t* f
         return 0;
     }
 
+    *move = entry.move;
+    
     if (entry.depth >= depth) {
         // only usable if depth is greater than or equal
         *score = entry.score;
         *flag = entry.flag;
-        *move = entry.move;
         return 1;
     }
 

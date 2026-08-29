@@ -3,7 +3,7 @@
 
 int scoreMove(Move m, Position* pos, Move ttMove) {
     if (m == ttMove) {
-        return 10000;
+        return 100000;
     }
     if (IsCapture(m)) {
         int capturer = pos->squares[MoveFrom(m)] % 6;
