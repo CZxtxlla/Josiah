@@ -22,8 +22,8 @@ extern int entries;
 void ttInit(int megabytes);
 void ttClear();
 
-void ttStore(uint64_t hash, uint8_t depth, Move move, uint32_t score, uint8_t flag);
-void ttProbe(uint64_t hash, uint8_t depth, Move* move, uint32_t* score, uint8_t* flag);
+int ttStore(uint64_t hash, uint8_t depth, Move move, uint32_t score, uint8_t flag); // 1 if overwrite existing data point, 0 if not
+int ttProbe(uint64_t hash, uint8_t depth, Move* move, uint32_t* score, uint8_t* flag); // 1 if successful, 0 if not
 
 
 #endif

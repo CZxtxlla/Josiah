@@ -29,3 +29,37 @@ void ttClear() {
     }
     memset(TTTable, 0, sizeof(TTEntry) * entries);
 }
+
+int ttStore(uint64_t hash, uint8_t depth, Move move, uint32_t score, uint8_t flag) {
+    int index = hash % entries;
+    int overwrite = 0;
+    if (TTTable[index].hash != hash) {
+        overwrite = 1;
+    }
+    TTTable[index].depth = depth;
+    TTTable[index].hash = hash;
+    TTTable[index].score = score;
+    TTTable[index].flag = flag;
+    TTTable[index].move = move;
+
+    return overwrite;
+}
+
+int ttProbe(uint64_t hash, uint8_t depth, Move* move, uint32_t* score, uint8_t* flag) {
+    int index = hash % entries;
+    TTEntry entry = TTTable[index];
+    if (entry.hash != hash) {
+        // also ensures no collisions
+        return 0;
+    }
+
+    if (entry.depth >= depth) {
+        // only usable if depth is greater than or equal
+        *score = entry.score;
+        *flag = entry.flag;
+        *move = entry.move;
+        return 1;
+    }
+
+    return 0;
+}
