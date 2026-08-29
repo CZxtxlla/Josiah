@@ -1,6 +1,7 @@
 #include "uci.h"
 #include "movegen.h"
 #include "perft.h"
+#include "transposition.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -112,6 +113,8 @@ void parsePosition(char* line, Position* pos) {
 
         makeMove(pos, m, &undo);
     }
+
+    pos->hash = ZobristHash(pos); // initialize zobrist hash
 }
 
 void uciLoop() {
@@ -133,6 +136,7 @@ void uciLoop() {
         } else if (!strncmp(line, "isready", 7)) {
             printf("readyok\n");
         } else if (!strncmp(line, "ucinewgame", 10)) {
+            ttClear();
             parseFen(STARTPOS, &pos);
         } else if (!strncmp(line, "perft", 5)) {
             strtok(line, " ");

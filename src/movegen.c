@@ -49,6 +49,18 @@ int moveWasLegal(Position* pos) {
     return !isSquareAttacked(pos, kingsq, pos->stm);
 }
 
+int moveIsLegal(Position* pos, Move move) {
+    Undo undo;
+    makeMove(pos, move, &undo);
+    if (moveWasLegal(pos)) {
+        unmakeMove(pos, move, &undo);
+        return 1;
+    } else {
+        unmakeMove(pos, move, &undo);
+        return 0;
+    }
+}
+
 void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
     // captures, en passant, promotions
     if (pos->stm == WHITE) {

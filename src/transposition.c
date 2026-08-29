@@ -1,4 +1,6 @@
 #include "transposition.h"
+#include <string.h>
+#include <stdlib.h>
 
 TTEntry* TTTable;
 int entries;
@@ -49,7 +51,6 @@ int ttProbe(uint64_t hash, uint8_t depth, Move* move, uint32_t* score, uint8_t* 
     int index = hash % entries;
     TTEntry entry = TTTable[index];
     if (entry.hash != hash) {
-        // also ensures no collisions
         return 0;
     }
 

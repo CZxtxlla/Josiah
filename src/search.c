@@ -1,9 +1,10 @@
 #include "search.h"
 #include "evaluate.h"
 #include "movegen.h"
-#include <limits.h>
 #include "utils.h"
 #include "movepicker.h"
+#include "transposition.h"
+#include <limits.h>
 
 int timeLimit = 100000000;
 
@@ -85,6 +86,22 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         return quiescence(pos, alpha, beta, state);
     }
 
+    uint32_t ttScore = 0;
+    Move ttMove = 0; 
+    uint8_t ttFlag = 0;
+
+    if (ttProbe(pos->hash, depth, &ttMove, &ttScore, &ttFlag)) {
+        if (!moveIsLegal(pos, ttMove)) {
+            // collision
+            ttMove = 0;
+        } else {
+            if (ttFlag == EXACT || (ttFlag == LOWERBOUND && ttScore >= beta) || (ttFlag == UPPERBOUND && ttScore <= alpha)) {
+                return ttScore;
+            }
+        }
+    }
+
+
     MoveList legalMoves;
     generateLegalMoves(pos, &legalMoves);
 
@@ -98,6 +115,8 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     }
 
     int bestValue = -INFINITY_SCORE;
+    int bestMove = 0; // used for tt storing
+    int originalAlpha = alpha; // used for tt storing
 
     orderMoves(&legalMoves, pos);
 
@@ -115,6 +134,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
 
         if (score > bestValue) {
             bestValue = score;
+            bestMove = legalMoves.moves[i];
         }
 
         if (score > alpha) {
@@ -127,6 +147,16 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         }
 
     }
+
+    uint8_t flag;
+    if (bestValue <= originalAlpha) {
+        flag = UPPERBOUND;
+    } else if (bestValue >= beta) {
+        flag = LOWERBOUND;
+    } else {
+        flag = EXACT;
+    }
+    ttStore(pos->hash, depth, bestMove, bestValue, flag);
     return bestValue;
 }
 

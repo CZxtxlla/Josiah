@@ -1,4 +1,5 @@
 #include "move.h"
+#include "zobrist.h"
 
 const int castlingRights[64] = {
     13, 15, 15, 15, 12, 15, 15, 14,
@@ -33,6 +34,9 @@ void makeMove(Position* pos, Move move, Undo* undo) {
     FlipBits(pos->pieces[piece], from, to);
     FlipBits(pos->occupancies[pos->stm], from, to);
     FlipBits(pos->occupancies[BOTH], from, to);
+    // update hash
+    pos->hash ^= ZOBRIST_PIECES[piece][from];
+    pos->hash ^= ZOBRIST_PIECES[piece][to];
 
     pos->squares[from] = PIECE_NONE;
     pos->squares[to] = piece;
@@ -41,12 +45,16 @@ void makeMove(Position* pos, Move move, Undo* undo) {
             FlipBits(pos->pieces[WHITE_ROOK], 5, 7);
             FlipBits(pos->occupancies[WHITE], 5, 7);
             FlipBits(pos->occupancies[BOTH], 5, 7);
+            pos->hash ^= ZOBRIST_PIECES[WHITE_ROOK][5];
+            pos->hash ^= ZOBRIST_PIECES[WHITE_ROOK][7];
             pos->squares[7] = PIECE_NONE;
             pos->squares[5] = WHITE_ROOK;
         } else {
             FlipBits(pos->pieces[BLACK_ROOK], 61, 63);
             FlipBits(pos->occupancies[BLACK], 61, 63);
             FlipBits(pos->occupancies[BOTH], 61, 63);
+            pos->hash ^= ZOBRIST_PIECES[BLACK_ROOK][61];
+            pos->hash ^= ZOBRIST_PIECES[BLACK_ROOK][63];
             pos->squares[63] = PIECE_NONE;
             pos->squares[61] = BLACK_ROOK;
         }
@@ -55,12 +63,16 @@ void makeMove(Position* pos, Move move, Undo* undo) {
             FlipBits(pos->pieces[WHITE_ROOK], 0, 3);
             FlipBits(pos->occupancies[WHITE], 0, 3);
             FlipBits(pos->occupancies[BOTH], 0, 3);
+            pos->hash ^= ZOBRIST_PIECES[WHITE_ROOK][0];
+            pos->hash ^= ZOBRIST_PIECES[WHITE_ROOK][3];
             pos->squares[0] = PIECE_NONE;
             pos->squares[3] = WHITE_ROOK;
         } else {
             FlipBits(pos->pieces[BLACK_ROOK], 56, 59);
             FlipBits(pos->occupancies[BLACK], 56, 59);
             FlipBits(pos->occupancies[BOTH], 56, 59);
+            pos->hash ^= ZOBRIST_PIECES[BLACK_ROOK][56];
+            pos->hash ^= ZOBRIST_PIECES[BLACK_ROOK][59];
             pos->squares[56] = PIECE_NONE;
             pos->squares[59] = BLACK_ROOK;
         }
@@ -75,28 +87,41 @@ void makeMove(Position* pos, Move move, Undo* undo) {
         FlipBit(pos->pieces[captured], capsq); // remove captured piece
         FlipBit(pos->occupancies[pos->xstm], capsq);
         FlipBit(pos->occupancies[BOTH], capsq);
+        pos->hash ^= ZOBRIST_PIECES[captured][capsq];
+    }
+
+    if (undo->ep_square != -1) {
+        pos->hash ^= ZOBRIST_EP[undo->ep_square % 8];
     }
     if (IsPromo(move)) {
         // promotion
         int promotedType = PromoType(move) + ((pos->stm == WHITE) ? 0 : 6);
         FlipBit(pos->pieces[piece], to);
         FlipBit(pos->pieces[promotedType], to);
+        pos->hash ^= ZOBRIST_PIECES[piece][to];
+        pos->hash ^= ZOBRIST_PIECES[promotedType][to];
         pos->squares[to] = promotedType;
         pos->ep_square = -1;
 
     } else if (IsDouble(move)) {
         // double pawn push
         pos->ep_square = (pos->stm == WHITE) ? (to - 8) : (to + 8);
+        pos->hash ^= ZOBRIST_EP[pos->ep_square % 8];
     } else {
         pos->ep_square = -1;
     }
+
+    pos->hash ^= ZOBRIST_CASTLE[undo->castling];
 
     // update castling rights
     pos->castling &= castlingRights[from];
     pos->castling &= castlingRights[to];
 
+    pos->hash ^= ZOBRIST_CASTLE[pos->castling];
+
     pos->full_moves += (pos->stm == BLACK);
 
+    pos->hash^= ZOBRIST_SIDE;
     pos->stm ^= 1;
     pos->xstm ^= 1;
 
