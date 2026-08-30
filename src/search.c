@@ -21,6 +21,15 @@ int isRepetition(Position* pos) {
     return 0;
 }
 
+int nonPawnMaterial(Position* pos) {
+    // for NMP to guard Zugzwang
+    if (pos->stm == WHITE) {
+        return pos->pieces[WHITE_KNIGHT] || pos->pieces[WHITE_BISHOP] || pos->pieces[WHITE_ROOK] || pos->pieces[WHITE_QUEEN];
+    } else {
+        return pos->pieces[BLACK_KNIGHT] || pos->pieces[BLACK_BISHOP] || pos->pieces[BLACK_ROOK] || pos->pieces[BLACK_QUEEN];
+    }
+}
+
 int quiescence(Position* pos, int alpha, int beta, SearchState* state) {
     state->nodes++;
 
@@ -136,16 +145,38 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         int staticEval = evaluateLegalPos(pos);
 
         if (depth == 1 && staticEval - PIECE_TO_SCORE[BISHOP] > beta) {
-            return beta;
+            return staticEval;
         }
         if (depth == 2 && staticEval - PIECE_TO_SCORE[ROOK] > beta) {
-            return beta;
+            return staticEval;
         }
         if (depth == 3 && staticEval - PIECE_TO_SCORE[QUEEN] > beta) {
             depth--; // demote search
         }
     }
 
+    // NMP
+    Undo undo;
+    if (!pvNode && nonPawnMaterial(pos) && !inCheck) {
+        int R = 3; // reduction
+        makeNullMove(pos, &undo);
+        state->ply++;
+        int nullDepth = depth - R - 1;
+        if (nullDepth < 0) {
+            nullDepth = 0;
+        }
+        int nullScore = -negaMax(pos, nullDepth, -beta, -beta + 1, state);
+        state->ply--;
+        unmakeNullMove(pos, &undo);
+
+        if (state->abort) {
+            return 0;
+        }
+
+        if (nullScore >= beta) {
+            return beta;
+        }
+    }
 
     MoveList pseudoMoves;
     generatePseudoMoves(pos, &pseudoMoves);
@@ -156,7 +187,6 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     int originalAlpha = alpha; // used for tt storing
 
     orderMoves(&pseudoMoves, pos, ttMove);
-    Undo undo;
     for (int i = 0; i < pseudoMoves.size; i++) {
         if (!makeMovePseudo(pos, pseudoMoves.moves[i], &undo)) {
             continue;

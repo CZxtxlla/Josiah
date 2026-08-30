@@ -307,3 +307,29 @@ int makeMovePseudo(Position* pos, Move move, Undo* undo) {
         return 0;
     }
 }
+
+void makeNullMove(Position* pos, Undo* undo) {
+    undo->ep_square = pos->ep_square;
+    undo->hash = pos->hash;
+    undo->half_moves = pos->half_moves;
+
+    if (pos->ep_square != -1) {
+        pos->hash ^= ZOBRIST_EP[pos->ep_square % 8];
+    }
+    pos->hash ^= ZOBRIST_SIDE;
+
+    pos->half_moves++;
+    pos->ep_square = -1;
+
+    pos->stm ^= 1;
+    pos->xstm ^= 1;
+}
+
+void unmakeNullMove(Position* pos, Undo* undo) {
+    pos->ep_square = undo->ep_square;
+    pos->hash = undo->hash;
+    pos->half_moves = undo->half_moves;
+
+    pos->stm ^= 1;
+    pos->xstm ^= 1;
+}

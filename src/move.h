@@ -48,6 +48,9 @@ void makeMove(Position* pos, Move move, Undo* undo);
 void unmakeMove(Position* pos, Move move, Undo* undo);
 int makeMovePseudo(Position* pos, Move move, Undo* undo);
 
+void makeNullMove(Position* pos, Undo* undo);
+void unmakeNullMove(Position* pos, Undo* undo);
+
 #define EncodeMove(from, to, flag) (from) | ((to) << 6) | ((flag << 12))
 #define MoveFrom(move) (move & 63)
 #define MoveTo(move) ((move >> 6) & 63)
