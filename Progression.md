@@ -104,7 +104,11 @@ Elo difference: 45.2 +/- 22.9, LOS: 100.0 %, DrawRatio: 24.9 %
 SPRT: llr 2.98 (101.2%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.0.9 is planned to add NMP, Reverse Futility pruning, and LMR
+Version 0.0.9 is planned to add RFP.
+
+Version 0.0.9.1 is planned to add NMP.
+
+Version 0.0.9.2 is planned to add LMR.
 
 ### Future Improvements
 

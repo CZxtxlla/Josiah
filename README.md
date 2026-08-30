@@ -14,3 +14,4 @@ Resources I have used:
 - Chess Programming Wiki
 - https://analog-hors.github.io/site/magic-bitboards/
 - https://chessprogramming.org/Search_Progression (using this as a kind of roadmap to progress through)
+- https://talkchess.com/viewtopic.php?t=41302&start=1

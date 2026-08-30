@@ -126,6 +126,26 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         }
     }
 
+    int kingSq = __builtin_ctzll(pos->pieces[(pos->stm == WHITE) ? WHITE_KING : BLACK_KING]);
+    int inCheck = isSquareAttacked(pos, kingSq, pos->xstm);
+
+    int pvNode = (beta - alpha > 1);
+
+    // RFP
+    if (!pvNode && !inCheck && depth <= 3) {
+        int staticEval = evaluateLegalPos(pos);
+
+        if (depth == 1 && staticEval - PIECE_TO_SCORE[BISHOP] > beta) {
+            return beta;
+        }
+        if (depth == 2 && staticEval - PIECE_TO_SCORE[ROOK] > beta) {
+            return beta;
+        }
+        if (depth == 3 && staticEval - PIECE_TO_SCORE[QUEEN] > beta) {
+            depth--; // demote search
+        }
+    }
+
 
     MoveList pseudoMoves;
     generatePseudoMoves(pos, &pseudoMoves);
@@ -187,8 +207,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
 
     if (legalMovesPlayed == 0) {
         // checkmate or stalemate
-        int kingsq = __builtin_ctzll(pos->pieces[(pos->stm == WHITE) ? WHITE_KING : BLACK_KING]);
-        if (isSquareAttacked(pos, kingsq, pos->xstm)) {
+        if (inCheck) {
             return -MATE_SCORE + state->ply;
         }
         return 0; // stalemate
