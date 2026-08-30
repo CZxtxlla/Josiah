@@ -138,6 +138,12 @@ SPRT: llr 2.96 (100.5%), lbound -2.94, ubound 2.94 - H1 was accepted
 ### Future Improvements
 
 These are just some performance enhancements that I noticed in other engines that I would like to implement eventually.
+- Lazy move ordering (proper movepicker (not what I have now))
 - PEXT instruction magic bitboards.
 - Bucketed TT
 - IIR https://talkchess.com/forum3/viewtopic.php?f=7&t=74769&sid=64085e3396554f0fba414404445b3120
+
+
+### Things I have tried that haven't panned out (some might be worth revisiting later)
+- not reducing if the opponents king is in check
+- 

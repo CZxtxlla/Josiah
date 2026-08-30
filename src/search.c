@@ -202,7 +202,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
             // LMR
             int wasReduced = 0;
             //int oppKingSq = __builtin_ctzll(pos->pieces[(pos->stm == WHITE) ? BLACK_KING : WHITE_KING]);
-            //int oppInCheck = isSquareAttacked(pos, kingSq, pos->stm);
+            //int oppInCheck = isSquareAttacked(pos, oppKingSq, pos->stm);
             if (depth > 3 && legalMovesPlayed > 2 && !inCheck && !IsCapture(pseudoMoves.moves[i]) 
             && !IsPromo(pseudoMoves.moves[i])) {
                 int reduction = (legalMovesPlayed > 6) ? 2 : 1;
