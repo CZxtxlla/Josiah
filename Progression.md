@@ -124,7 +124,16 @@ Elo difference: 147.2 +/- 46.0, LOS: 100.0 %, DrawRatio: 25.4 %
 SPRT: llr 2.97 (100.8%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.0.9.2 is planned to add LMR.
+Version 0.0.9.2 adds basic LMR reducing if quiet and by 1 if less than 6 moves played and by two otherwise. Here is the result of sprt with version 0.0.9.1:
+
+Score of Josiah v0.0.9.2 vs Josiah v0.0.9.1: 409 - 320 - 272  [0.544] 1001
+...      Josiah v0.0.9.2 playing White: 244 - 125 - 132  [0.619] 501
+...      Josiah v0.0.9.2 playing Black: 165 - 195 - 140  [0.470] 500
+...      White vs Black: 439 - 290 - 272  [0.574] 1001
+Elo difference: 31.0 +/- 18.4, LOS: 100.0 %, DrawRatio: 27.2 %
+SPRT: llr 2.96 (100.5%), lbound -2.94, ubound 2.94 - H1 was accepted
+
+
 
 ### Future Improvements
 
