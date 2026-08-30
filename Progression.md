@@ -131,3 +131,4 @@ Version 0.0.9.2 is planned to add LMR.
 These are just some performance enhancements that I noticed in other engines that I would like to implement eventually.
 - PEXT instruction magic bitboards.
 - Bucketed TT
+- IIR https://talkchess.com/forum3/viewtopic.php?f=7&t=74769&sid=64085e3396554f0fba414404445b3120

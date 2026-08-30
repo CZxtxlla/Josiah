@@ -193,16 +193,34 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         }
         legalMovesPlayed++;
         state->ply++;
+
         int score;
         if (legalMovesPlayed == 1) {
             // perform full window search
             score = -negaMax(pos, depth - 1, -beta, -alpha, state);
         } else {
-            // perform null window search
-            score = -negaMax(pos, depth - 1, -alpha - 1, -alpha, state);
-            if (score > alpha && score < beta) {
-                // re-search
-                score = -negaMax(pos, depth - 1, -beta, -alpha, state);
+            // LMR
+            int wasReduced = 0;
+            //int oppKingSq = __builtin_ctzll(pos->pieces[(pos->stm == WHITE) ? BLACK_KING : WHITE_KING]);
+            //int oppInCheck = isSquareAttacked(pos, kingSq, pos->stm);
+            if (depth > 3 && legalMovesPlayed > 2 && !inCheck && !IsCapture(pseudoMoves.moves[i]) 
+            && !IsPromo(pseudoMoves.moves[i])) {
+                int reduction = (legalMovesPlayed > 6) ? 2 : 1;
+
+                score = -negaMax(pos, depth - 1 - reduction, -alpha - 1, -alpha, state);
+
+                if (score <= alpha) {
+                    // skip rest of search
+                    wasReduced = 1;
+                }
+            }
+            if (!wasReduced) {
+                // perform null window search
+                score = -negaMax(pos, depth - 1, -alpha - 1, -alpha, state);
+                if (score > alpha && score < beta) {
+                    // re-search
+                    score = -negaMax(pos, depth - 1, -beta, -alpha, state);
+                }
             }
         }
         state->ply--;
