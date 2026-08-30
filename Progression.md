@@ -104,7 +104,15 @@ Elo difference: 45.2 +/- 22.9, LOS: 100.0 %, DrawRatio: 24.9 %
 SPRT: llr 2.98 (101.2%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.0.9 is planned to add RFP.
+Version 0.0.9 adds RFP. Here is the result of sprt with version 0.0.8:
+
+Score of Josiah v0.0.9 vs Josiah v0.0.8: 283 - 195 - 138  [0.571] 616
+...      Josiah v0.0.9 playing White: 173 - 68 - 68  [0.670] 309
+...      Josiah v0.0.9 playing Black: 110 - 127 - 70  [0.472] 307
+...      White vs Black: 300 - 178 - 138  [0.599] 616
+Elo difference: 50.0 +/- 24.4, LOS: 100.0 %, DrawRatio: 22.4 %
+SPRT: llr 2.96 (100.4%), lbound -2.94, ubound 2.94 - H1 was accepted
+
 
 Version 0.0.9.1 is planned to add NMP.
 
