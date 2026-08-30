@@ -145,10 +145,10 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         int staticEval = evaluateLegalPos(pos);
 
         if (depth == 1 && staticEval - PIECE_TO_SCORE[BISHOP] > beta) {
-            return staticEval;
+            return beta;
         }
         if (depth == 2 && staticEval - PIECE_TO_SCORE[ROOK] > beta) {
-            return staticEval;
+            return beta;
         }
         if (depth == 3 && staticEval - PIECE_TO_SCORE[QUEEN] > beta) {
             depth--; // demote search
