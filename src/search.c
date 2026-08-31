@@ -252,8 +252,18 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
             // cutoff
             if (!IsCapture(bestMove)) {
                 // only save quiet moves, captured moves already ordered above
-                state->history[pos->stm][MoveFrom(bestMove)][MoveTo(bestMove)] += depth * depth;
+                if (state->ply < MAX_SEARCH_DEPTH && bestMove != state->killer[0][state->ply]) {
+                    state->killer[1][state->ply] = state->killer[0][state->ply];
+                    state->killer[0][state->ply] = bestMove;
+                }
+                int mf = MoveFrom(bestMove);
+                int mt = MoveTo(bestMove);
+                state->history[pos->stm][mf][mt] += depth * depth;
+                if (state->history[pos->stm][mf][mt] >= 18000) {
+                    state->history[pos->stm][mf][mt] = 17999;
+                }
             }
+
             break;
         }
     }

@@ -15,3 +15,4 @@ Resources I have used:
 - https://chessprogramming.org/Search_Progression (using this as a kind of roadmap to progress through)
 - https://talkchess.com/viewtopic.php?t=41302&start=1
 - https://chess.stackexchange.com/questions/15856/implementing-late-move-reduction-lmr-inside-iterative-deepening
+- https://rustic-chess.org/search/ordering/killers.html Very nice explanation of killer moves.

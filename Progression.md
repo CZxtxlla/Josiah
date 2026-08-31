@@ -143,7 +143,15 @@ Elo difference: 68.8 +/- 29.2, LOS: 100.0 %, DrawRatio: 26.7 %
 SPRT: llr 2.96 (100.4%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.1.1 is planned to add the killer moves heuristic
+Version 0.1.1 adds the killer moves heuristic. Here is the result of sprt with version 0.1.0:
+
+Score of Josiah v0.1.1 vs Josiah v0.1.0: 280 - 197 - 186  [0.563] 663
+...      Josiah v0.1.1 playing White: 164 - 73 - 95  [0.637] 332
+...      Josiah v0.1.1 playing Black: 116 - 124 - 91  [0.488] 331
+...      White vs Black: 288 - 189 - 186  [0.575] 663
+Elo difference: 43.7 +/- 22.5, LOS: 100.0 %, DrawRatio: 28.1 %
+SPRT: llr 2.96 (100.5%), lbound -2.94, ubound 2.94 - H1 was accepted
+
 
 Version 0.1.2 is planned to convert to lazy move generation...
 
@@ -157,6 +165,7 @@ These are just some performance enhancements that I noticed in other engines tha
 - PEXT instruction magic bitboards.
 - Bucketed TT
 - IIR https://talkchess.com/forum3/viewtopic.php?f=7&t=74769&sid=64085e3396554f0fba414404445b3120
+- Persistant history table across the whole game
 
 
 ### Things I have tried that haven't panned out (some might be worth revisiting later)

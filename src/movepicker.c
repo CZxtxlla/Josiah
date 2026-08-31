@@ -5,13 +5,20 @@ int scoreMove(Move m, Position* pos, Move ttMove, SearchState* state) {
     if (m == ttMove) {
         return 100000;
     }
+    // range 20000 to 28900
     if (IsCapture(m)) {
         int capturer = pos->squares[MoveFrom(m)] % 6;
         int captured = IsEP(m) ? PAWN : (pos->squares[MoveTo(m)] % 6);
 
-        return (10 * PIECE_TO_SCORE[captured]) - PIECE_TO_SCORE[capturer];
+        return (10 * PIECE_TO_SCORE[captured]) - PIECE_TO_SCORE[capturer] + 20000;
     } 
-    
+
+    if (m == state->killer[0][state->ply]) {
+        return 19000;
+    } else if (m == state->killer[1][state->ply]) {
+        return 18000;
+    }
+    // range 0 to 18000
     return state->history[pos->stm][MoveFrom(m)][MoveTo(m)];
 }
 
