@@ -5,6 +5,7 @@
 #include "movepicker.h"
 #include "transposition.h"
 #include <limits.h>
+#include "string.h"
 
 int timeLimit = 100000000;
 
@@ -65,7 +66,7 @@ int quiescence(Position* pos, int alpha, int beta, SearchState* state) {
     noisyMoves.size = 0;
     generateNoisyMoves(pos, &noisyMoves);
 
-    orderMoves(&noisyMoves, pos, 0);
+    orderMoves(&noisyMoves, pos, 0, state);
 
     Undo undo;
     for (int i = 0; i < noisyMoves.size; i++) {
@@ -186,7 +187,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     int bestMove = 0; // used for tt storing
     int originalAlpha = alpha; // used for tt storing
 
-    orderMoves(&pseudoMoves, pos, ttMove);
+    orderMoves(&pseudoMoves, pos, ttMove, state);
     for (int i = 0; i < pseudoMoves.size; i++) {
         if (!makeMovePseudo(pos, pseudoMoves.moves[i], &undo)) {
             continue;
@@ -249,6 +250,10 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
 
         if (alpha >= beta) {
             // cutoff
+            if (!IsCapture(bestMove)) {
+                // only save quiet moves, captured moves already ordered above
+                state->history[pos->stm][MoveFrom(bestMove)][MoveTo(bestMove)] += depth * depth;
+            }
             break;
         }
     }
@@ -275,6 +280,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
 
 void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
     SearchState state;
+    memset(&state, 0, sizeof(SearchState));
     state.ply = 0;
     state.nodes = 0;
     state.startTime = getTimeMS();
@@ -302,7 +308,7 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
         return;
     }
 
-    orderMoves(&legalMoves, pos, ttMove);
+    orderMoves(&legalMoves, pos, ttMove, &state);
     Move bestMoveSoFar = legalMoves.moves[0];
 
     Undo undo;

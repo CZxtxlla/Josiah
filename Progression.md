@@ -133,6 +133,21 @@ Score of Josiah v0.0.9.2 vs Josiah v0.0.9.1: 409 - 320 - 272  [0.544] 1001
 Elo difference: 31.0 +/- 18.4, LOS: 100.0 %, DrawRatio: 27.2 %
 SPRT: llr 2.96 (100.5%), lbound -2.94, ubound 2.94 - H1 was accepted
 
+Version 0.1.0 adds the history heuristic to move ordering. Here is the result of sprt with version 0.0.9.2:
+
+Score of Josiah v0.1.0 vs Josiah v0.0.9.2: 190 - 110 - 109  [0.598] 409
+...      Josiah v0.1.0 playing White: 112 - 45 - 47  [0.664] 204
+...      Josiah v0.1.0 playing Black: 78 - 65 - 62  [0.532] 205
+...      White vs Black: 177 - 123 - 109  [0.566] 409
+Elo difference: 68.8 +/- 29.2, LOS: 100.0 %, DrawRatio: 26.7 %
+SPRT: llr 2.96 (100.4%), lbound -2.94, ubound 2.94 - H1 was accepted
+
+
+Version 0.1.1 is planned to add the killer moves heuristic
+
+Version 0.1.2 is planned to convert to lazy move generation...
+
+
 
 
 ### Future Improvements
