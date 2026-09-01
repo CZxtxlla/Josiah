@@ -5,6 +5,9 @@ int scoreMove(Move m, Position* pos, Move ttMove, SearchState* state) {
     if (m == ttMove) {
         return 100000;
     }
+    if (IsPromo(m)) {
+        return 30000;
+    }
     // range 20000 to 28900
     if (IsCapture(m)) {
         int capturer = pos->squares[MoveFrom(m)] % 6;

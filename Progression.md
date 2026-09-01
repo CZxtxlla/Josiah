@@ -153,7 +153,19 @@ Elo difference: 43.7 +/- 22.5, LOS: 100.0 %, DrawRatio: 28.1 %
 SPRT: llr 2.96 (100.5%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.1.2 is planned to convert to lazy move generation...
+Version 0.1.2 adds promotions to move ordering and promotion restriction on history/killer moves. Here is the result of sprt with version 0.1.1:
+
+Score of Josiah v0.1.2 vs Josiah v0.1.1: 3147 - 3035 - 2521  [0.506] 8703
+...      Josiah v0.1.2 playing White: 1913 - 1156 - 1283  [0.587] 4352
+...      Josiah v0.1.2 playing Black: 1234 - 1879 - 1238  [0.426] 4351
+...      White vs Black: 3792 - 2390 - 2521  [0.581] 8703
+Elo difference: 4.5 +/- 6.1, LOS: 92.3 %, DrawRatio: 29.0 %
+SPRT: llr -0.537 (-18.2%), lbound -2.94, ubound 2.94
+
+Note that I stopped it early (after 8703 games), it definitely improved but only in extreme edge cases where promotions even come up and the game isn't already over.
+
+
+Version 0.1.3 is planned to convert to lazy move generation...
 
 
 

@@ -250,7 +250,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
 
         if (alpha >= beta) {
             // cutoff
-            if (!IsCapture(bestMove)) {
+            if (!IsCapture(bestMove) && !IsPromo(bestMove)) {
                 // only save quiet moves, captured moves already ordered above
                 if (state->ply < MAX_SEARCH_DEPTH && bestMove != state->killer[0][state->ply]) {
                     state->killer[1][state->ply] = state->killer[0][state->ply];
