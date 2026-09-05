@@ -296,7 +296,14 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
     state.startTime = getTimeMS();
     state.abort = 0;
 
-    timeLimit = (searchTimeLimit > 0) ? searchTimeLimit : 99999999;
+    if (searchTimeLimit > 30) {
+        timeLimit = searchTimeLimit - 30;
+    } else if (searchTimeLimit > 0) {
+        timeLimit = searchTimeLimit / 2;
+    } else {
+        timeLimit = 99999999;
+    }
+    
     maxDepth = (maxDepth > 0) ? maxDepth : MAX_SEARCH_DEPTH;
 
     int32_t ttScore = 0;
