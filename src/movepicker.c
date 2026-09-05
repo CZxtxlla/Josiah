@@ -50,3 +50,99 @@ void orderMoves(MoveList* movesl, Position* pos, Move ttMove, SearchState* state
         scores[max_idx] = tempScore;
     }
 }
+
+void initPicker(MovePicker* picker, Move ttMove) {
+    picker->hashMove = ttMove;
+    picker->index = 0;
+    picker->phase = HASH_MOVE;
+    picker->possibleMoves.size = 0;
+}
+
+ Move nextMove(MovePicker* picker, Position* pos, SearchState* state) {
+    while (1) {
+        switch(picker->phase) {
+            case HASH_MOVE:
+                picker->phase = GEN_NOISY;
+                if (picker->hashMove != 0) {
+                    return picker->hashMove;
+                }
+                break;
+
+            case GEN_NOISY:
+                picker->phase = NOISY_MOVES;
+                generateNoisyMoves(pos, &picker->possibleMoves);
+                for (int i = 0; i < picker->possibleMoves.size; i++) {
+                    picker->scores[i] = scoreMove(picker->possibleMoves.moves[i], pos, picker->hashMove, state);
+                }
+                break;
+
+            case NOISY_MOVES:
+                if (picker->index < picker->possibleMoves.size) {
+                    int bestIndex = picker->index;
+                    for (int j = picker->index + 1; j < picker->possibleMoves.size; j++) {
+                        if (picker->scores[j] > picker->scores[bestIndex]) {
+                            bestIndex = j;
+                        }
+                    }
+
+                    // swap bestIndex and picker->index
+                    Move tempMove = picker->possibleMoves.moves[picker->index];
+                    picker->possibleMoves.moves[picker->index] = picker->possibleMoves.moves[bestIndex];
+                    picker->possibleMoves.moves[bestIndex] = tempMove;
+
+                    int tempScore = picker->scores[picker->index];
+                    picker->scores[picker->index] = picker->scores[bestIndex];
+                    picker->scores[bestIndex] = tempScore;
+
+                    Move m = picker->possibleMoves.moves[picker->index];
+                    picker->index++;
+
+                    if (m != picker->hashMove) {
+                        return m;
+                    }
+                } else {
+                    picker->phase = GEN_QUIET;
+                }
+                break;
+
+            case GEN_QUIET:
+                picker->phase = QUIET_MOVES;
+                picker->index = 0;
+                picker->possibleMoves.size = 0;
+                generateQuietMoves(pos, &picker->possibleMoves);
+                break;
+
+            case QUIET_MOVES:
+                if (picker->index < picker->possibleMoves.size) {
+                    int bestIndex = picker->index;
+                    for (int j = picker->index + 1; j < picker->possibleMoves.size; j++) {
+                        if (picker->scores[j] > picker->scores[bestIndex]) {
+                            bestIndex = j;
+                        }
+                    }
+
+                    Move tempMove = picker->possibleMoves.moves[picker->index];
+                    picker->possibleMoves.moves[picker->index] = picker->possibleMoves.moves[bestIndex];
+                    picker->possibleMoves.moves[bestIndex] = tempMove;
+
+                    int tempScore = picker->scores[picker->index];
+                    picker->scores[picker->index] = picker->scores[bestIndex];
+                    picker->scores[bestIndex] = tempScore;
+
+                    Move m = picker->possibleMoves.moves[picker->index];
+                    picker->index++;
+
+                    if (m != picker->hashMove) {
+                        return m;
+                    }
+                } else {
+                    picker->phase = END;
+                }
+                break;
+
+            case END:
+                return NULL_MOVE;
+
+        }
+    }
+}
