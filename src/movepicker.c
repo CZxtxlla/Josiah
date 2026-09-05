@@ -97,7 +97,7 @@ void initPicker(MovePicker* picker, Move ttMove) {
                     Move m = picker->possibleMoves.moves[picker->index];
                     picker->index++;
 
-                    if (m != picker->hashMove) {
+                    if (m != picker->hashMove && m != 0) {
                         return m;
                     }
                 } else {
@@ -110,6 +110,9 @@ void initPicker(MovePicker* picker, Move ttMove) {
                 picker->index = 0;
                 picker->possibleMoves.size = 0;
                 generateQuietMoves(pos, &picker->possibleMoves);
+                for (int i = 0; i < picker->possibleMoves.size; i++) {
+                    picker->scores[i] = scoreMove(picker->possibleMoves.moves[i], pos, picker->hashMove, state);
+                }
                 break;
 
             case QUIET_MOVES:
@@ -132,7 +135,7 @@ void initPicker(MovePicker* picker, Move ttMove) {
                     Move m = picker->possibleMoves.moves[picker->index];
                     picker->index++;
 
-                    if (m != picker->hashMove) {
+                    if (m != picker->hashMove && m != 0) {
                         return m;
                     }
                 } else {
