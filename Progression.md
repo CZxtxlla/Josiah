@@ -165,6 +165,14 @@ SPRT: llr -0.537 (-18.2%), lbound -2.94, ubound 2.94
 Note that I stopped it early (after 8703 games), it definitely improved but only in extreme edge cases where promotions even come up and the game isn't already over.
 
 
+Version 0.2.0 adds basic staged movegen. Here is the result of sprt with version 0.1.3:
+
+Score of Josiah v0.2.0 vs Josiah v0.1.3: 1262 - 1140 - 931  [0.518] 3333
+...      Josiah v0.2.0 playing White: 782 - 439 - 445  [0.603] 1666
+...      Josiah v0.2.0 playing Black: 480 - 701 - 486  [0.434] 1667
+...      White vs Black: 1483 - 919 - 931  [0.585] 3333
+Elo difference: 12.7 +/- 10.0, LOS: 99.4 %, DrawRatio: 27.9 %
+SPRT: llr 2.96 (100.5%), lbound -2.94, ubound 2.94 - H1 was accepted
 Version 0.1.3 adds a 30 ms move overhead for the time control. Here is the result of sprt with version 0.1.2:
 
 Score of Josiah v0.1.3 vs Josiah v0.1.2: 2429 - 2386 - 1738  [0.503] 6553

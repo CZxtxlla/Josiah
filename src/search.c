@@ -179,17 +179,17 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         }
     }
 
-    MoveList pseudoMoves;
-    generatePseudoMoves(pos, &pseudoMoves);
-
     int legalMovesPlayed = 0;
     int bestValue = -INFINITY_SCORE;
     int bestMove = 0; // used for tt storing
     int originalAlpha = alpha; // used for tt storing
 
-    orderMoves(&pseudoMoves, pos, ttMove, state);
-    for (int i = 0; i < pseudoMoves.size; i++) {
-        if (!makeMovePseudo(pos, pseudoMoves.moves[i], &undo)) {
+    MovePicker picker;
+    initPicker(&picker, ttMove);
+    
+    Move move;
+    while((move = nextMove(&picker, pos, state)) != 0) {
+        if (!makeMovePseudo(pos, move, &undo)) {
             continue;
         }
         legalMovesPlayed++;
@@ -204,8 +204,8 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
             int wasReduced = 0;
             //int oppKingSq = __builtin_ctzll(pos->pieces[(pos->stm == WHITE) ? BLACK_KING : WHITE_KING]);
             //int oppInCheck = isSquareAttacked(pos, oppKingSq, pos->stm);
-            if (depth > 3 && legalMovesPlayed > 2 && !inCheck && !IsCapture(pseudoMoves.moves[i]) 
-            && !IsPromo(pseudoMoves.moves[i])) {
+            if (depth > 3 && legalMovesPlayed > 2 && !inCheck && !IsCapture(move) 
+            && !IsPromo(move)) {
                 int reduction = (legalMovesPlayed > 6) ? 2 : 1;
 
                 score = -negaMax(pos, depth - 1 - reduction, -alpha - 1, -alpha, state);
@@ -225,7 +225,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
             }
         }
         state->ply--;
-        unmakeMove(pos, pseudoMoves.moves[i], &undo);
+        unmakeMove(pos, move, &undo);
 
         if (state->abort) {
             return 0;
@@ -233,13 +233,13 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
 
         if (score > bestValue) {
             bestValue = score;
-            bestMove = pseudoMoves.moves[i];
+            bestMove = move;
         }
 
         if (score > alpha) {
             alpha = score;
             
-            state->pvTable[state->ply][state->ply] = pseudoMoves.moves[i];
+            state->pvTable[state->ply][state->ply] = move;
 
             for (int nextPly = state->ply + 1; nextPly < state->pvLength[state->ply + 1]; nextPly++) {
                 state->pvTable[state->ply][nextPly] = state->pvTable[state->ply + 1][nextPly];
@@ -303,7 +303,6 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
     } else {
         timeLimit = 99999999;
     }
-    
     maxDepth = (maxDepth > 0) ? maxDepth : MAX_SEARCH_DEPTH;
 
     int32_t ttScore = 0;
