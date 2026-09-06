@@ -54,6 +54,86 @@ int isSquareAttacked(Position* pos, int square, int attackerColour) {
     return 0; // not attacked
 }
 
+int moveIsPseudo(Position* pos, Move move) {
+    int from = MoveFrom(move);
+    int to = MoveTo(move);
+    int piece = pos->squares[from];
+    int us = pos->stm;
+    int pt = piece % 6;
+    int pc = piece / 6;
+
+    if (piece == PIECE_NONE || pc != us) {
+        return 0;
+    }
+    if ((1ULL << to) & pos->occupancies[us]) {
+        return 0;
+    }
+
+    if (IsCapture(move) && !IsEP(move) && pos->squares[to] == PIECE_NONE) {
+        return 0;
+    }
+    if (!IsCapture(move) && pos->squares[to] != PIECE_NONE) {
+        return 0;
+    }
+
+    Bitboard occ = pos->occupancies[BOTH];
+
+    switch (pt) {
+        case KNIGHT:
+            return (getKnightAttacks(from) & (1ULL << to)) != 0;
+        case BISHOP:
+            return (getBishopAttacks(from, occ) & (1ULL << to)) != 0;
+        case ROOK:
+            return (getRookAttacks(from, occ) & (1ULL << to)) != 0;
+        case QUEEN:
+            return (getQueenAttacks(from, occ) & (1ULL << to)) != 0;
+        case KING:
+            if ((getKingAttacks(from) & (1ULL << to)) != 0) {
+                return 1;
+            }
+
+            int flag = MoveFlag(move);
+
+            if (flag == KING_CASTLE) {
+                if (us == WHITE && (pos->castling & WHITE_KS) && from == E1 && to == G1) {
+                    return !(occ & ((1ULL << F1) | (1ULL << G1)));
+                }
+                if (us == BLACK && (pos->castling & BLACK_KS) && from == E8 && to == G8) {
+                    return !(occ & ((1ULL << F8) | (1ULL << G8)));
+                }
+            } else if (flag == QUEEN_CASTLE) {
+                if (us == WHITE && (pos->castling & WHITE_QS) && from == E1 && to == C1) {
+                    return !(occ & ((1ULL << B1) | (1ULL << C1) | (1ULL << D1)));
+                }
+                if (us == BLACK && (pos->castling & BLACK_QS) && from == E8 && to == C8) {
+                    return !(occ & ((1ULL << B8) | (1ULL << C8) | (1ULL << D8)));
+                }
+            }
+            return 0;
+            
+        case PAWN:
+            if (IsCapture(move)) {
+                if (IsEP(move)) {
+                    return to == pos->ep_square;
+                }
+                return (getPawnAttacks(us, from) & (1ULL << to)) != 0;
+            } else {
+                int push = (us == WHITE) ? 8 : -8;
+
+                if (from + push == to) {
+                    return pos->squares[to] == PIECE_NONE;
+                }
+                int startRank = (us == WHITE) ? 1 : 6;
+
+                if ((from / 8) == startRank && from + (push * 2) == to) {
+                    return pos->squares[from + push] == PIECE_NONE && pos->squares[to] == PIECE_NONE;
+                }
+                return 0;
+            }
+    }
+    return 0;
+}
+
 int moveWasLegal(Position* pos) {
 
     Bitboard king = pos->pieces[(pos->xstm == WHITE) ? WHITE_KING : BLACK_KING];
