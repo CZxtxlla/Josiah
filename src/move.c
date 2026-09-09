@@ -61,18 +61,24 @@ int moveIsPseudo(Position* pos, Move move) {
     int us = pos->stm;
     int pt = piece % 6;
     int pc = piece / 6;
+    int flag = MoveFlag(move);
 
-    if (piece == PIECE_NONE || pc != us) {
+    if ((move == NULL_MOVE || move == 0) || (pc != us) || (piece == PIECE_NONE)) {
         return 0;
     }
     if ((1ULL << to) & pos->occupancies[us]) {
         return 0;
     }
 
-    if (IsCapture(move) && !IsEP(move) && pos->squares[to] == PIECE_NONE) {
+    if (IsEP(move) && pt != PAWN) {
         return 0;
     }
-    if (!IsCapture(move) && pos->squares[to] != PIECE_NONE) {
+
+    if (IsPromo(move) && pt != PAWN) {
+        return 0;
+    }
+
+    if ((flag == KING_CASTLE || flag == QUEEN_CASTLE) && pt != KING) {
         return 0;
     }
 
@@ -80,56 +86,90 @@ int moveIsPseudo(Position* pos, Move move) {
 
     switch (pt) {
         case KNIGHT:
-            return (getKnightAttacks(from) & (1ULL << to)) != 0;
+            return !IsEP(move) && !IsPromo(move) && (getKnightAttacks(from) & (1ULL << to));
         case BISHOP:
-            return (getBishopAttacks(from, occ) & (1ULL << to)) != 0;
+            return !IsEP(move) && !IsPromo(move) && (getBishopAttacks(from, occ) & (1ULL << to));
         case ROOK:
-            return (getRookAttacks(from, occ) & (1ULL << to)) != 0;
+            return !IsEP(move) && !IsPromo(move) && (getRookAttacks(from, occ) & (1ULL << to));
         case QUEEN:
-            return (getQueenAttacks(from, occ) & (1ULL << to)) != 0;
+            return !IsEP(move) && !IsPromo(move) && (getQueenAttacks(from, occ) & (1ULL << to));
         case KING:
-            if ((getKingAttacks(from) & (1ULL << to)) != 0) {
-                return 1;
+            if (flag != KING_CASTLE && flag != QUEEN_CASTLE) {
+                return (getKingAttacks(from) & (1ULL << to));
             }
 
-            int flag = MoveFlag(move);
+            int them = pos->xstm;
 
             if (flag == KING_CASTLE) {
                 if (us == WHITE && (pos->castling & WHITE_KS) && from == E1 && to == G1) {
-                    return !(occ & ((1ULL << F1) | (1ULL << G1)));
+                    if (occ & ((1ULL << F1) | (1ULL << G1))) {
+                        return 0;
+                    }
+                    if (isSquareAttacked(pos, E1, them) || isSquareAttacked(pos, F1, them)) {
+                        return 0;
+                    }
+                    return 1;
                 }
                 if (us == BLACK && (pos->castling & BLACK_KS) && from == E8 && to == G8) {
-                    return !(occ & ((1ULL << F8) | (1ULL << G8)));
+                    if (occ & ((1ULL << F8) | (1ULL << G8))) {
+                        return 0;
+                    }
+                    if (isSquareAttacked(pos, E8, them) || isSquareAttacked(pos, F8, them)) {
+                        return 0;
+                    }
+                    return 1;
                 }
             } else if (flag == QUEEN_CASTLE) {
                 if (us == WHITE && (pos->castling & WHITE_QS) && from == E1 && to == C1) {
-                    return !(occ & ((1ULL << B1) | (1ULL << C1) | (1ULL << D1)));
+                    if (occ & ((1ULL << B1) | (1ULL << C1) | (1ULL << D1))) {
+                        return 0;
+                    }
+                    if (isSquareAttacked(pos, E1, them) || isSquareAttacked(pos, D1, them)) {
+                        return 0;
+                    }
+                    return 1;
                 }
                 if (us == BLACK && (pos->castling & BLACK_QS) && from == E8 && to == C8) {
-                    return !(occ & ((1ULL << B8) | (1ULL << C8) | (1ULL << D8)));
+                    if (occ & ((1ULL << B8) | (1ULL << C8) | (1ULL << D8))) {
+                        return 0;
+                    }
+                    if (isSquareAttacked(pos, E8, them) || isSquareAttacked(pos, D8, them)) {
+                        return 0;
+                    }
+                    return 1;
                 }
             }
             return 0;
             
         case PAWN:
+            if (IsEP(move)) {
+                if (to != pos->ep_square) {
+                    return 0;
+                }
+                int capsq = (us == WHITE) ? to - 8 : to + 8;
+                int enemyPawn = (us == WHITE) ? BLACK_PAWN : WHITE_PAWN;
+                return (pos->squares[capsq] == enemyPawn) && (getPawnAttacks(us, from) & (1ULL << to));
+            }
             if (IsCapture(move)) {
-                if (IsEP(move)) {
-                    return to == pos->ep_square;
-                }
-                return (getPawnAttacks(us, from) & (1ULL << to)) != 0;
-            } else {
-                int push = (us == WHITE) ? 8 : -8;
+                return (pos->squares[to] != PIECE_NONE) && (getPawnAttacks(us, from) & (1ULL << to)) != 0;
 
-                if (from + push == to) {
-                    return pos->squares[to] == PIECE_NONE;
-                }
-                int startRank = (us == WHITE) ? 1 : 6;
+            }
 
-                if ((from / 8) == startRank && from + (push * 2) == to) {
-                    return pos->squares[from + push] == PIECE_NONE && pos->squares[to] == PIECE_NONE;
-                }
+            if (pos->squares[to] != PIECE_NONE) {
                 return 0;
             }
+
+            int push = (us == WHITE) ? 8 : -8;
+
+            if (from + push == to) {
+                return 1;
+            }
+            int startRank = (us == WHITE) ? 1 : 6;
+
+            if ((from / 8) == startRank && from + (push * 2) == to) {
+                return pos->squares[from + push] == PIECE_NONE;
+            }
+            return 0;
     }
     return 0;
 }
