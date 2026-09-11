@@ -101,7 +101,6 @@ int quiescence(Position* pos, int alpha, int beta, SearchState* state) {
 
 int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     state->nodes++;
-    state->pvLength[state->ply] = state->ply;
 
     if (state->nodes % 2048 == 0) {
         if ((getTimeMS() - state->startTime) >= timeLimit) {
@@ -112,6 +111,12 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     if (state->abort) {
         return 0;
     }
+
+    if (state->ply >= MAX_SEARCH_DEPTH - 1) {
+        return evaluateLegalPos(pos);
+    }
+    
+    state->pvLength[state->ply] = state->ply;
 
     if (isRepetition(pos) || pos->half_moves >= 100) {
         return 0;

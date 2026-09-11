@@ -82,6 +82,15 @@ int moveIsPseudo(Position* pos, Move move) {
         return 0;
     }
 
+    if (IsCapture(move) && !IsEP(move) && ((pos->squares[to] == PIECE_NONE) || (pos->squares[to] % 6 == KING))) {
+        return 0;
+    }
+
+    if (!IsCapture(move) && pos->squares[to] != PIECE_NONE) {
+        return 0;
+    }
+
+
     Bitboard occ = pos->occupancies[BOTH];
 
     switch (pt) {
@@ -175,13 +184,25 @@ int moveIsPseudo(Position* pos, Move move) {
 }
 
 int moveWasLegal(Position* pos) {
+    Bitboard oppKing = pos->pieces[(pos->stm == WHITE) ? WHITE_KING : BLACK_KING];
+    if (oppKing == 0) {
+        return 0;
+    }
 
     Bitboard king = pos->pieces[(pos->xstm == WHITE) ? WHITE_KING : BLACK_KING];
+    if (king == 0) {
+        return 0;
+    }
     int kingsq = __builtin_ctzll(king);
     return !isSquareAttacked(pos, kingsq, pos->stm);
 }
 
 int moveIsLegal(Position* pos, Move move) {
+    /*
+    if (!moveIsPseudo(pos, move)) {
+        return 0;
+    }
+    */
     Undo undo;
     makeMove(pos, move, &undo);
     if (moveWasLegal(pos)) {
