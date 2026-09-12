@@ -14,7 +14,11 @@ int isRepetition(Position* pos) {
         return 0;
     }
 
-    for (int i = pos->historyPly - 2; i >= pos->historyPly - pos->half_moves; i -=2) {
+    int oldest = pos->historyPly - pos->half_moves;
+    if (oldest < 0) {
+        oldest = 0;
+    }
+    for (int i = pos->historyPly - 2; i >= oldest; i -=2) {
         if (pos->history[i] == pos->hash) {
             return 1;
         }
@@ -48,7 +52,7 @@ int quiescence(Position* pos, int alpha, int beta, SearchState* state) {
         return 0;
     }
 
-    if (state->ply >= 128) {
+    if (state->ply >= MAX_SEARCH_DEPTH) {
         // arbitrary, potentially could remove
         return evaluateLegalPos(pos);
     }
@@ -130,13 +134,16 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     Move ttMove = 0; 
     uint8_t ttFlag = 0;
 
-    if (ttProbe(pos->hash, depth, &ttMove, &ttScore, &ttFlag)) {
+    int ttHit = ttProbe(pos->hash, depth, &ttMove, &ttScore, &ttFlag);
+    if (ttMove != 0) {
         if (!moveIsLegal(pos, ttMove)) {
             // collision
             ttMove = 0;
         } else {
-            if (ttFlag == EXACT || (ttFlag == LOWERBOUND && ttScore >= beta) || (ttFlag == UPPERBOUND && ttScore <= alpha)) {
-                return ttScore;
+            if (ttHit) {
+                if (ttFlag == EXACT || (ttFlag == LOWERBOUND && ttScore >= beta) || (ttFlag == UPPERBOUND && ttScore <= alpha)) {
+                    return ttScore;
+                }
             }
         }
     }
@@ -190,7 +197,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     int originalAlpha = alpha; // used for tt storing
 
     MovePicker picker;
-    initPicker(&picker, ttMove);
+    initPicker(&picker, ttMove, state);
     
     Move move;
     while((move = nextMove(&picker, pos, state)) != 0) {

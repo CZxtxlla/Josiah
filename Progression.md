@@ -186,11 +186,24 @@ Elo difference: 12.7 +/- 10.0, LOS: 99.4 %, DrawRatio: 27.9 %
 SPRT: llr 2.96 (100.5%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
+Version 0.2.1 adds killer moves to the staged movegen, as well as many safety fixes. Here is the result of sprt with version 0.2.0:
+
+Score of Josiah v0.2.1 vs Josiah v0.2.0: 2567 - 2440 - 1960  [0.509] 6967
+...      Josiah v0.2.1 playing White: 1598 - 916 - 970  [0.598] 3484
+...      Josiah v0.2.1 playing Black: 969 - 1524 - 990  [0.420] 3483
+...      White vs Black: 3122 - 1885 - 1960  [0.589] 6967
+Elo difference: 6.3 +/- 6.9, LOS: 96.4 %, DrawRatio: 28.1 %
+SPRT: llr 1.07 (36.4%), lbound -2.94, ubound 2.94
+
+Note I, once again, stopped it early (after 6967 games)
+This version took so much debugging like two weeks of just trying to fix the pseudo move validator and trying everything possible, all for ~6 elo... 
+
+
+Who knows what is next...
 
 ### Future Improvements
 
 These are just some performance enhancements that I noticed in other engines that I would like to implement eventually.
-- Lazy move ordering (proper movepicker (not what I have now))
 - PEXT instruction magic bitboards.
 - Bucketed TT
 - IIR https://talkchess.com/forum3/viewtopic.php?f=7&t=74769&sid=64085e3396554f0fba414404445b3120

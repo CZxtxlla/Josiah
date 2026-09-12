@@ -7,7 +7,7 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
         Bitboard pawns = pos->pieces[WHITE_PAWN];
         Bitboard promotingPawns = pawns & RANK_7;
         Bitboard normalPawns = pawns & ~RANK_7;
-        Bitboard enemies = pos->occupancies[BLACK];
+        Bitboard enemies = pos->occupancies[BLACK] & ~pos->pieces[BLACK_KING];
 
         Bitboard rightCaptures = (normalPawns << 9) & ~A_FILE & enemies;
         Bitboard leftCaptures = (normalPawns << 7) & ~H_FILE & enemies;
@@ -72,7 +72,7 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
         Bitboard pawns = pos->pieces[BLACK_PAWN];
         Bitboard promotingPawns = pawns & RANK_2;
         Bitboard normalPawns = pawns & ~RANK_2;
-        Bitboard enemies = pos->occupancies[WHITE];
+        Bitboard enemies = pos->occupancies[WHITE] & ~pos->pieces[WHITE_KING];
 
         Bitboard rightCaptures = (normalPawns >> 9) & ~H_FILE & enemies;
         Bitboard leftCaptures = (normalPawns >> 7) & ~A_FILE & enemies;
@@ -137,7 +137,8 @@ void generateNoisyMoves(Position* pos, MoveList* noisyMoves) {
 
     // other captures
     int offset = (pos->stm == WHITE) ? 0 : 6;
-    Bitboard enemies = pos->occupancies[pos->xstm];
+    int enemyKing = (pos->stm == WHITE) ? BLACK_KING : WHITE_KING;
+    Bitboard enemies = pos->occupancies[pos->xstm] & ~pos->pieces[enemyKing];
 
     Bitboard knights = pos->pieces[KNIGHT + offset];
     while (knights) {

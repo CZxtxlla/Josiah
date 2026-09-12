@@ -41,6 +41,7 @@ static inline void addMove(MoveList* list, Move move) {
 
 int isSquareAttacked(Position* pos, int square, int attackerColour);
 
+int killerIsValid(Position* pos, Move move);
 int moveIsPseudo(Position* pos, Move move);
 int moveIsLegal(Position* pos, Move move);
 int moveWasLegal(Position* pos); // check if king is in check

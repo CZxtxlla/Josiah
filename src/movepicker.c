@@ -51,10 +51,12 @@ void orderMoves(MoveList* movesl, Position* pos, Move ttMove, SearchState* state
     }
 }
 
-void initPicker(MovePicker* picker, Move ttMove) {
+void initPicker(MovePicker* picker, Move ttMove, SearchState* state) {
     picker->hashMove = ttMove;
     picker->index = 0;
     picker->phase = HASH_MOVE;
+    picker->killer1 = state->killer[0][state->ply];
+    picker->killer2 = state->killer[1][state->ply];
     picker->possibleMoves.size = 0;
 }
 
@@ -63,7 +65,7 @@ void initPicker(MovePicker* picker, Move ttMove) {
         switch(picker->phase) {
             case HASH_MOVE:
                 picker->phase = GEN_NOISY;
-                if (picker->hashMove != 0) {
+                if (picker->hashMove != NULL_MOVE) {
                     return picker->hashMove;
                 }
                 break;
@@ -97,11 +99,29 @@ void initPicker(MovePicker* picker, Move ttMove) {
                     Move m = picker->possibleMoves.moves[picker->index];
                     picker->index++;
 
+                    if (!IsCapture(m) && !IsPromo(m)) {
+                        continue;
+                    }
+
                     if (m != picker->hashMove && m != 0) {
                         return m;
                     }
                 } else {
-                    picker->phase = GEN_QUIET;
+                    picker->phase = KILLER_MOVE_1;
+                }
+                break;
+            
+            case KILLER_MOVE_1:
+                picker->phase = KILLER_MOVE_2;
+                if (picker->killer1 != NULL_MOVE && picker->killer1 != picker->hashMove && killerIsValid(pos, picker->killer1)) {
+                    return picker->killer1;
+                }
+                break;
+
+            case KILLER_MOVE_2:
+                picker->phase = GEN_QUIET;
+                if (picker->killer2 != NULL_MOVE && picker->killer2 != picker->hashMove && picker->killer2 != picker->killer1 && killerIsValid(pos, picker->killer2)) {
+                    return picker->killer2;
                 }
                 break;
 
@@ -135,7 +155,11 @@ void initPicker(MovePicker* picker, Move ttMove) {
                     Move m = picker->possibleMoves.moves[picker->index];
                     picker->index++;
 
-                    if (m != picker->hashMove && m != 0) {
+                    if (IsCapture(m) || IsPromo(m)) {
+                        continue;
+                    }
+
+                    if (m != NULL_MOVE && m != picker->hashMove && m != picker->killer1 && m != picker->killer2) {
                         return m;
                     }
                 } else {

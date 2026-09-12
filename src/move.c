@@ -14,7 +14,7 @@ const int castlingRights[64] = {
 };
 
 int isSquareAttacked(Position* pos, int square, int attackerColour) {
-
+    /*
     // pawns (pawn can only be attacked from square )
     if (attackerColour == WHITE) {
         if (((1ULL << square) >> 7) & ~A_FILE & pos->pieces[WHITE_PAWN]) {
@@ -31,6 +31,12 @@ int isSquareAttacked(Position* pos, int square, int attackerColour) {
         if (((1ULL << square) << 9) & ~A_FILE & pos->pieces[BLACK_PAWN]) {
             return 1;
         } 
+    }
+    */
+    // pawns
+    int reverseColour = (attackerColour == WHITE) ? BLACK : WHITE;
+    if (getPawnAttacks(reverseColour, square) & (attackerColour == WHITE ? pos->pieces[WHITE_PAWN] : pos->pieces[BLACK_PAWN])) {
+        return 1;
     }
 
     // knights
@@ -54,6 +60,130 @@ int isSquareAttacked(Position* pos, int square, int attackerColour) {
     return 0; // not attacked
 }
 
+int killerIsValid(Position* pos, Move move) {
+    // checks move is pseudoLegal, already knowing it is quiet (non capture, non promo)
+    if (move == NULL_MOVE) {
+        return 0;
+    }
+
+    int from = MoveFrom(move);
+    int to = MoveTo(move);
+    int piece = pos->squares[from];
+    int flag = MoveFlag(move);
+    int pt = piece % 6;
+
+    if (flag == CAPTURE || flag == EP_CAPTURE || flag >= PROMO) {
+        return 0;
+    }
+
+    if (flag == DOUBLE_PUSH && pt != PAWN) {
+        return 0;
+    }
+
+    if ((flag == KING_CASTLE || flag == QUEEN_CASTLE) && pt != KING) {
+        return 0;
+    }
+    
+    if (piece == PIECE_NONE) {
+        return 0;
+    }
+
+    int us = pos->stm;
+
+    if (piece / 6 != us) {
+        return 0;
+    }
+
+    if (pos->squares[to] != PIECE_NONE) {
+        return 0;
+    }
+
+    Bitboard occ = pos->occupancies[BOTH];
+
+    switch (pt) {
+        case KNIGHT:
+            return (getKnightAttacks(from) & (1ULL << to)) != 0;
+
+        case BISHOP:
+            return (getBishopAttacks(from, occ) & (1ULL << to)) != 0;
+
+        case ROOK:
+            return (getRookAttacks(from, occ) & (1ULL << to)) != 0;
+
+        case QUEEN:
+            return (getQueenAttacks(from, occ) & (1ULL << to)) != 0;
+
+        case KING:
+            if (flag != KING_CASTLE && flag != QUEEN_CASTLE) {
+                return (getKingAttacks(from) & (1ULL << to)) != 0;
+            }
+
+            int them = pos->xstm;
+
+            if (flag == KING_CASTLE) {
+                if (us == WHITE && (pos->castling & WHITE_KS) && from == E1 && to == G1) {
+                    if (occ & ((1ULL << F1) | (1ULL << G1))) {
+                        return 0;
+                    }
+                    if (isSquareAttacked(pos, E1, them) || isSquareAttacked(pos, F1, them)) {
+                        return 0;
+                    }
+                    return 1;
+                }
+                if (us == BLACK && (pos->castling & BLACK_KS) && from == E8 && to == G8) {
+                    if (occ & ((1ULL << F8) | (1ULL << G8))) {
+                        return 0;
+                    }
+                    if (isSquareAttacked(pos, E8, them) || isSquareAttacked(pos, F8, them)) {
+                        return 0;
+                    }
+                    return 1;
+                }
+            } else if (flag == QUEEN_CASTLE) {
+                if (us == WHITE && (pos->castling & WHITE_QS) && from == E1 && to == C1) {
+                    if (occ & ((1ULL << B1) | (1ULL << C1) | (1ULL << D1))) {
+                        return 0;
+                    }
+                    if (isSquareAttacked(pos, E1, them) || isSquareAttacked(pos, D1, them)) {
+                        return 0;
+                    }
+                    return 1;
+                }
+                if (us == BLACK && (pos->castling & BLACK_QS) && from == E8 && to == C8) {
+                    if (occ & ((1ULL << B8) | (1ULL << C8) | (1ULL << D8))) {
+                        return 0;
+                    }
+                    if (isSquareAttacked(pos, E8, them) || isSquareAttacked(pos, D8, them)) {
+                        return 0;
+                    }
+                    return 1;
+                }
+            }
+            return 0;
+
+        case PAWN:
+            int push = (us == WHITE) ? 8 : -8;
+            int promoRank = (us == WHITE) ? 7 : 0;
+            
+            // ensure no promotions
+            if ((to / 8) == promoRank) {
+                return 0;
+            }
+
+            if (from + push == to) {
+                return 1;
+            }
+
+            int startRank = (us == WHITE) ? 1 : 6;
+
+            if ((from / 8) == startRank && from + (push * 2) == to) {
+                return pos->squares[from + push] == PIECE_NONE;
+            }
+            return 0;
+    }
+    return 0;
+}
+
 int moveIsPseudo(Position* pos, Move move) {
     int from = MoveFrom(move);
     int to = MoveTo(move);
@@ -64,6 +194,12 @@ int moveIsPseudo(Position* pos, Move move) {
     int flag = MoveFlag(move);
 
     if ((move == NULL_MOVE || move == 0) || (pc != us) || (piece == PIECE_NONE)) {
+        return 0;
+    }
+    if (flag > EP_CAPTURE && flag < PROMO) {
+        return 0;
+    }
+    if (flag == DOUBLE_PUSH && pt != PAWN) {
         return 0;
     }
     if ((1ULL << to) & pos->occupancies[us]) {
@@ -95,16 +231,16 @@ int moveIsPseudo(Position* pos, Move move) {
 
     switch (pt) {
         case KNIGHT:
-            return !IsEP(move) && !IsPromo(move) && (getKnightAttacks(from) & (1ULL << to));
+            return !IsEP(move) && !IsPromo(move) && ((getKnightAttacks(from) & (1ULL << to)) != 0);
         case BISHOP:
-            return !IsEP(move) && !IsPromo(move) && (getBishopAttacks(from, occ) & (1ULL << to));
+            return !IsEP(move) && !IsPromo(move) && ((getBishopAttacks(from, occ) & (1ULL << to)) != 0);
         case ROOK:
-            return !IsEP(move) && !IsPromo(move) && (getRookAttacks(from, occ) & (1ULL << to));
+            return !IsEP(move) && !IsPromo(move) && ((getRookAttacks(from, occ) & (1ULL << to)) != 0);
         case QUEEN:
-            return !IsEP(move) && !IsPromo(move) && (getQueenAttacks(from, occ) & (1ULL << to));
+            return !IsEP(move) && !IsPromo(move) && ((getQueenAttacks(from, occ) & (1ULL << to)) != 0);
         case KING:
             if (flag != KING_CASTLE && flag != QUEEN_CASTLE) {
-                return (getKingAttacks(from) & (1ULL << to));
+                return ((getKingAttacks(from) & (1ULL << to)) != 0);
             }
 
             int them = pos->xstm;
@@ -198,11 +334,7 @@ int moveWasLegal(Position* pos) {
 }
 
 int moveIsLegal(Position* pos, Move move) {
-    /*
-    if (!moveIsPseudo(pos, move)) {
-        return 0;
-    }
-    */
+    // given it is pseudo legal already
     Undo undo;
     makeMove(pos, move, &undo);
     if (moveWasLegal(pos)) {
