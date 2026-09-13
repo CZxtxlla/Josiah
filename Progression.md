@@ -199,7 +199,14 @@ Note I, once again, stopped it early (after 6967 games)
 This version took so much debugging like two weeks of just trying to fix the pseudo move validator and trying everything possible, all for ~6 elo... 
 
 
-Who knows what is next...
+Version 0.2.2 adds some perofmrance improvements with precomputed piece types/colours. Here is the result of sprt with version 0.2.1:
+
+Score of Josiah v0.2.2 vs Josiah v0.2.1: 434 - 345 - 319  [0.541] 1098
+...      Josiah v0.2.2 playing White: 254 - 145 - 150  [0.599] 549
+...      Josiah v0.2.2 playing Black: 180 - 200 - 169  [0.482] 549
+...      White vs Black: 454 - 325 - 319  [0.559] 1098
+Elo difference: 28.2 +/- 17.3, LOS: 99.9 %, DrawRatio: 29.1 %
+SPRT: llr 2.98 (101.2%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 ### Future Improvements
 

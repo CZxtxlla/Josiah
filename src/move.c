@@ -2,6 +2,18 @@
 #include "zobrist.h"
 #include "attacks.h"
 
+const int pieceType[13] = {
+    PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING,
+    PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING,
+    PIECE_NONE
+};
+
+const int pieceColour[13] = {
+    WHITE, WHITE, WHITE, WHITE, WHITE, WHITE,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BOTH
+};
+
 const int castlingRights[64] = {
     13, 15, 15, 15, 12, 15, 15, 14,
     15, 15, 15, 15, 15, 15, 15, 15,
@@ -14,25 +26,6 @@ const int castlingRights[64] = {
 };
 
 int isSquareAttacked(Position* pos, int square, int attackerColour) {
-    /*
-    // pawns (pawn can only be attacked from square )
-    if (attackerColour == WHITE) {
-        if (((1ULL << square) >> 7) & ~A_FILE & pos->pieces[WHITE_PAWN]) {
-            return 1;
-        } 
-        if (((1ULL << square) >> 9) & ~H_FILE & pos->pieces[WHITE_PAWN]) {
-            return 1;
-        } 
-    }
-    if (attackerColour == BLACK) {
-        if (((1ULL << square) << 7) & ~H_FILE & pos->pieces[BLACK_PAWN]) {
-            return 1;
-        } 
-        if (((1ULL << square) << 9) & ~A_FILE & pos->pieces[BLACK_PAWN]) {
-            return 1;
-        } 
-    }
-    */
     // pawns
     int reverseColour = (attackerColour == WHITE) ? BLACK : WHITE;
     if (getPawnAttacks(reverseColour, square) & (attackerColour == WHITE ? pos->pieces[WHITE_PAWN] : pos->pieces[BLACK_PAWN])) {
@@ -70,7 +63,7 @@ int killerIsValid(Position* pos, Move move) {
     int to = MoveTo(move);
     int piece = pos->squares[from];
     int flag = MoveFlag(move);
-    int pt = piece % 6;
+    int pt = pieceType[piece];
 
     if (flag == CAPTURE || flag == EP_CAPTURE || flag >= PROMO) {
         return 0;
@@ -90,7 +83,7 @@ int killerIsValid(Position* pos, Move move) {
 
     int us = pos->stm;
 
-    if (piece / 6 != us) {
+    if (pieceColour[piece] != us) {
         return 0;
     }
 
@@ -189,8 +182,8 @@ int moveIsPseudo(Position* pos, Move move) {
     int to = MoveTo(move);
     int piece = pos->squares[from];
     int us = pos->stm;
-    int pt = piece % 6;
-    int pc = piece / 6;
+    int pt = pieceType[piece];
+    int pc = pieceColour[piece];
     int flag = MoveFlag(move);
 
     if ((move == NULL_MOVE || move == 0) || (pc != us) || (piece == PIECE_NONE)) {
@@ -218,7 +211,7 @@ int moveIsPseudo(Position* pos, Move move) {
         return 0;
     }
 
-    if (IsCapture(move) && !IsEP(move) && ((pos->squares[to] == PIECE_NONE) || (pos->squares[to] % 6 == KING))) {
+    if (IsCapture(move) && !IsEP(move) && ((pos->squares[to] == PIECE_NONE) || (pieceType[pos->squares[to]] == KING))) {
         return 0;
     }
 
@@ -365,7 +358,7 @@ void makeMove(Position* pos, Move move, Undo* undo) {
 
     pos->half_moves++;
 
-    if (piece % 6 == 0) {
+    if (pieceType[piece] == PAWN) {
         pos->half_moves = 0;
     }
 

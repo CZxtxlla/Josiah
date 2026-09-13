@@ -7,6 +7,8 @@
 
 typedef uint64_t Bitboard;
 
+extern const int pieceType[13];
+extern const int pieceColour[13];
 
 enum {
     PAWN,
