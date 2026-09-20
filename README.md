@@ -9,7 +9,20 @@ Additionally, from the start I will be optimizing this for my ryzen 5000 series 
 My main references are the engines Ethereal and Berserk. (My movegen code is heavily inspired/sourced from Berserk, as well as the nice video series Berserk was based upon:
 https://www.youtube.com/channel/UCB9-prLkPwgvlKKqDgXhsMQ/videos)
 
-Resources I have used:
+### Features
+---
+- Bitboard and mailbox board representations
+- 16 bit move encoding
+- Staged movegen
+- Iterative deepening alpha beta pruning search
+  - Quiescent search
+  - Transposition Table
+  - PVS, RFP, NMP, LMR
+  - killer moves, history moves
+- UCI compatible
+
+### Resources
+---
 - Chess Programming Wiki
 - https://analog-hors.github.io/site/magic-bitboards/
 - https://chessprogramming.org/Search_Progression (using this as a kind of roadmap to progress through)

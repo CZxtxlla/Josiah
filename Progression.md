@@ -199,7 +199,7 @@ Note I, once again, stopped it early (after 6967 games)
 This version took so much debugging like two weeks of just trying to fix the pseudo move validator and trying everything possible, all for ~6 elo... 
 
 
-Version 0.2.2 adds some perofmrance improvements with precomputed piece types/colours. Here is the result of sprt with version 0.2.1:
+Version 0.2.2 adds some performance improvements with precomputed piece types/colours. Here is the result of sprt with version 0.2.1:
 
 Score of Josiah v0.2.2 vs Josiah v0.2.1: 434 - 345 - 319  [0.541] 1098
 ...      Josiah v0.2.2 playing White: 254 - 145 - 150  [0.599] 549

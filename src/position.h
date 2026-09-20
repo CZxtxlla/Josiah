@@ -14,6 +14,7 @@ extern const char PIECE_TO_CHAR[];
 #define BLACK_QS 0x8
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define KIWIPETE "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -"
 
 typedef struct {
     Bitboard occupancies[3]; // 0 = white, 1 = black, 2 = both

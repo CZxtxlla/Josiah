@@ -198,9 +198,22 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
 
     MovePicker picker;
     initPicker(&picker, ttMove, state);
-    
+    //int staticEval = -INFINITY_SCORE;
     Move move;
     while((move = nextMove(&picker, pos, state)) != 0) {
+        /*
+        // futility pruning
+        if (!pvNode && depth == 1 && !inCheck && !IsCapture(move) && !IsPromo(move) && move != ttMove) {
+            int margin = 600;
+            if (staticEval == -INFINITY_SCORE) {
+                staticEval = evaluateLegalPos(pos);
+            }
+            if (staticEval + margin <= alpha) {
+                continue;
+            }
+        }
+        */
+
         if (!makeMovePseudo(pos, move, &undo)) {
             continue;
         }
@@ -216,8 +229,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
             int wasReduced = 0;
             //int oppKingSq = __builtin_ctzll(pos->pieces[(pos->stm == WHITE) ? BLACK_KING : WHITE_KING]);
             //int oppInCheck = isSquareAttacked(pos, oppKingSq, pos->stm);
-            if (depth > 3 && legalMovesPlayed > 2 && !inCheck && !IsCapture(move) 
-            && !IsPromo(move)) {
+            if (depth > 3 && legalMovesPlayed > 2 && !inCheck && !IsCapture(move) && !IsPromo(move)) {
                 int reduction = (legalMovesPlayed > 6) ? 2 : 1;
 
                 score = -negaMax(pos, depth - 1 - reduction, -alpha - 1, -alpha, state);

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "search.h"
+#include "utils.h"
 
 #define VERSION "0.0"
 
@@ -115,6 +116,59 @@ void parsePosition(char* line, Position* pos) {
     }
 }
 
+void runBench(char* line, Position* pos) {
+    char* ptr = line + 5; // skip "bench"
+
+    while (*ptr == ' ' || *ptr == '\r' || *ptr == '\n' || *ptr == '\t') {
+        ptr++;
+    }
+
+    int depth = 5; // default
+
+    if (*ptr >= '0' && *ptr <= '9') {
+        depth = atoi(ptr);
+        while (*ptr != ' ' && *ptr != '\0') {
+            ptr++;
+        }
+        while (*ptr == ' ' || *ptr == '\r' || *ptr == '\n' || *ptr == '\t') {
+            ptr++;
+        }
+    }
+
+    char* fen = KIWIPETE;
+
+    if (*ptr != '\0') {
+        fen = ptr;
+    }
+
+    parseFen(fen, pos);
+
+    printf("\n Benchmark Started: Depth %d \n", depth);
+
+    SearchState state;
+    memset(&state, 0, sizeof(SearchState));
+    state.ply = 0;
+    state.nodes = 0;
+    state.startTime = getTimeMS();
+    state.abort = 0;
+
+    for (int currentDepth = 1; currentDepth <= depth; currentDepth++) {
+        long long nodesBefore = state.nodes;
+        int finalScore = negaMax(pos, currentDepth, -INFINITY_SCORE, INFINITY_SCORE, &state);
+        long long duration = getTimeMS() - state.startTime;
+        if (duration == 0) {
+            duration = 1;
+        }
+        printf("info depth %d score cp %d nodes %lld time %lld ms nps %lld\n", currentDepth, finalScore, state.nodes - nodesBefore, duration, (state.nodes * 1000) / duration);
+    }
+
+    long long duration = getTimeMS() - state.startTime;
+    if (duration == 0) {
+        duration = 1;
+    }
+    printf("Benchmark finished: nodes %lld time %lld ms nps %lld\n", state.nodes, duration, (state.nodes * 1000) / duration);
+}
+
 void uciLoop() {
     char line[4096];
 
@@ -148,6 +202,8 @@ void uciLoop() {
             parsePosition(line, &pos);
         } else if (!strncmp(line, "print", 5)) {
             printPosition(&pos);
+        } else if (!strncmp(line, "bench", 5)) {
+            runBench(line, &pos);
         } else if (!strncmp(line, "quit", 4)) {
             break;
         }
