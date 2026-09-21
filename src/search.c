@@ -198,21 +198,33 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
 
     MovePicker picker;
     initPicker(&picker, ttMove, state);
-    //int staticEval = -INFINITY_SCORE;
+
+    int staticEval = -INFINITY_SCORE;
+    int movesPruned = 0;
+    
     Move move;
     while((move = nextMove(&picker, pos, state)) != 0) {
-        /*
+
         // futility pruning
         if (!pvNode && depth == 1 && !inCheck && !IsCapture(move) && !IsPromo(move) && move != ttMove) {
-            int margin = 600;
+            int margin = 300;
             if (staticEval == -INFINITY_SCORE) {
                 staticEval = evaluateLegalPos(pos);
             }
             if (staticEval + margin <= alpha) {
-                continue;
+                if (moveIsLegal(pos, move)) {
+                    movesPruned = 1;
+
+                    if (staticEval > bestValue) {
+                        bestValue = staticEval;
+                    }
+                    continue;
+                } else {
+                    // not legal
+                    continue;
+                }
             }
         }
-        */
 
         if (!makeMovePseudo(pos, move, &undo)) {
             continue;
@@ -296,6 +308,9 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         // checkmate or stalemate
         if (inCheck) {
             return -MATE_SCORE + state->ply;
+        }
+        if (movesPruned) {
+            return bestValue;
         }
         return 0; // stalemate
     }

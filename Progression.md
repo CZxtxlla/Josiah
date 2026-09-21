@@ -208,15 +208,28 @@ Score of Josiah v0.2.2 vs Josiah v0.2.1: 434 - 345 - 319  [0.541] 1098
 Elo difference: 28.2 +/- 17.3, LOS: 99.9 %, DrawRatio: 29.1 %
 SPRT: llr 2.98 (101.2%), lbound -2.94, ubound 2.94 - H1 was accepted
 
+
+Version 0.2.3 adds futility pruning. Here is the result of sprt with version 0.2.2:
+
+Score of Josiah v0.2.3 vs Josiah v0.2.2: 1111 - 995 - 811  [0.520] 2917
+...      Josiah v0.2.3 playing White: 685 - 393 - 381  [0.600] 1459
+...      Josiah v0.2.3 playing Black: 426 - 602 - 430  [0.440] 1458
+...      White vs Black: 1287 - 819 - 811  [0.580] 2917
+Elo difference: 13.8 +/- 10.7, LOS: 99.4 %, DrawRatio: 27.8 %
+SPRT: llr 2.95 (100.3%), lbound -2.94, ubound 2.94 - H1 was accepted
+
+
+Version 0.2.4 plans to add IIR
+
 ### Future Improvements
 
 These are just some performance enhancements that I noticed in other engines that I would like to implement eventually.
-- PEXT instruction magic bitboards.
+- PEXT instruction magic bitboards. (wont really give a performance improvement but a faster boot potentially)
 - Bucketed TT
 - IIR https://talkchess.com/forum3/viewtopic.php?f=7&t=74769&sid=64085e3396554f0fba414404445b3120
 - Persistant history table across the whole game
+- SPSA pruning parameters tuning
 
 
 ### Things I have tried that haven't panned out (some might be worth revisiting later)
 - not reducing if the opponents king is in check
-- 
