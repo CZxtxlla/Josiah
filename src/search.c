@@ -366,46 +366,101 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
     orderMoves(&legalMoves, pos, ttMove, &state);
     Move bestMoveSoFar = legalMoves.moves[0];
 
+    int prevScore = 0;
+
     Undo undo;
     for (int j = 1; j <= maxDepth; j++) {
+        int increase = 25; // amount to increase window if fail high/fail low
+        int alpha = (j >= 4) ? (prevScore - increase) : -INFINITY_SCORE;
+        int beta = (j >= 4) ? (prevScore + increase) : INFINITY_SCORE;
 
-        int alpha = -INFINITY_SCORE;
-        int beta = INFINITY_SCORE;
-        Move bestRootMoveThisDepth = legalMoves.moves[0];
-        state.pvLength[0] = 0;
+        while (1) {
+            int bestScore = -INFINITY_SCORE;
+            Move bestRootMoveThisDepth = legalMoves.moves[0];
+            state.pvLength[0] = 0;
+            int curAlpha = alpha;
 
-        for (int i = 0; i < legalMoves.size; i++) {
-            makeMove(pos, legalMoves.moves[i], &undo);
-            state.ply++;
+            for (int i = 0; i < legalMoves.size; i++) {
+                makeMove(pos, legalMoves.moves[i], &undo);
+                state.ply++;
 
-            int score;
-            if (i == 0) {
-                // full search
-                score = -negaMax(pos, j - 1, -beta, -alpha, &state);
-            } else {
-                score =  -negaMax(pos, j - 1, -alpha - 1, -alpha, &state);
-                if (score > alpha && score < beta) {
-                    score = -negaMax(pos, j - 1, -beta, -alpha, &state);
+                int score;
+                if (i == 0) {
+                    // full search
+                    score = -negaMax(pos, j - 1, -beta, -curAlpha, &state);
+                } else {
+                    score =  -negaMax(pos, j - 1, -curAlpha - 1, -curAlpha, &state);
+                    if (score > curAlpha && score < beta) {
+                        score = -negaMax(pos, j - 1, -beta, -curAlpha, &state);
+                    }
                 }
-            }
-            state.ply--;
-            unmakeMove(pos, legalMoves.moves[i], &undo);
-            
-            if (state.abort) {
-                break; // don't use partial results
-            }
-
-            if (score > alpha) {
-                alpha = score;
-                bestRootMoveThisDepth = legalMoves.moves[i];
-
-                state.pvTable[0][0] = legalMoves.moves[i];
+                state.ply--;
+                unmakeMove(pos, legalMoves.moves[i], &undo);
                 
-                for (int nextPly = 1; nextPly < state.pvLength[1]; nextPly++) {
-                    state.pvTable[0][nextPly] = state.pvTable[1][nextPly];
+                if (state.abort) {
+                    break; // don't use partial results
                 }
 
-                state.pvLength[0] = state.pvLength[1];
+                if (score > bestScore) {
+                    bestScore = score;
+                }
+
+                if (score > curAlpha) {
+                    curAlpha = score;
+                    bestRootMoveThisDepth = legalMoves.moves[i];
+
+                    state.pvTable[0][0] = legalMoves.moves[i];
+                
+                    for (int nextPly = 1; nextPly < state.pvLength[1]; nextPly++) {
+                        state.pvTable[0][nextPly] = state.pvTable[1][nextPly];
+                    }
+
+                    state.pvLength[0] = state.pvLength[1];
+                }
+
+                if (curAlpha >= beta) {
+                    break;
+                }
+            }
+
+            if (state.abort) {
+                break;
+            }
+
+            // shift bestmove to the front for next iteration
+            if (bestScore > alpha) {
+                for (int i = 0; i < legalMoves.size; i++) {
+                    if (legalMoves.moves[i] == bestRootMoveThisDepth) {
+                        for (int k = i; k > 0; k--) {
+                            legalMoves.moves[k] = legalMoves.moves[k - 1];
+                        }
+                        legalMoves.moves[0] = bestRootMoveThisDepth;
+                        break;
+                    }
+                }
+            }
+
+            if (bestScore <= alpha) {
+                beta = (alpha + beta) / 2; // shift beta downward
+                // widen alpha downward
+                alpha = (bestScore - increase > -INFINITY_SCORE) ? (bestScore - increase) : -INFINITY_SCORE;
+                increase *= 2;
+            } else if (bestScore >= beta) {
+                bestMoveSoFar = bestRootMoveThisDepth;
+
+                long long duration = getTimeMS() - state.startTime;
+                printf("info depth %d score cp %d lowerbound time %lld nodes %lld pv ", j, prevScore, duration, state.nodes);
+                for (int k = 0; k < state.pvLength[0]; k++) {
+                    printf("%s ", moveToStr(state.pvTable[0][k]));
+                }
+                printf("\n");
+
+                beta = (bestScore + increase < INFINITY_SCORE) ? (bestScore + increase) : INFINITY_SCORE;
+                increase *= 2;
+            } else {
+                prevScore = bestScore;
+                bestMoveSoFar = bestRootMoveThisDepth;
+                break;
             }
         }
 
@@ -413,9 +468,8 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
             break;
         }
 
-        bestMoveSoFar = bestRootMoveThisDepth;
         long long duration = getTimeMS() - state.startTime;
-        printf("info depth %d score cp %d time %lld nodes %lld pv ", j, alpha, duration, state.nodes);
+        printf("info depth %d score cp %d time %lld nodes %lld pv ", j, prevScore, duration, state.nodes);
         for (int k = 0; k < state.pvLength[0]; k++) {
             printf("%s ", moveToStr(state.pvTable[0][k]));
         }

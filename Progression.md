@@ -219,7 +219,16 @@ Elo difference: 13.8 +/- 10.7, LOS: 99.4 %, DrawRatio: 27.8 %
 SPRT: llr 2.95 (100.3%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.2.4 plans to add IIR
+Version 0.2.4 adds aspiration windows. Here is the result of sprt with version 0.2.3:
+
+Finished game 762 (Josiah v0.2.3 vs Josiah v0.2.4): 0-1 {Black mates}
+Score of Josiah v0.2.4 vs Josiah v0.2.3: 337 - 238 - 177  [0.566] 752
+Score of Josiah v0.2.4 vs Josiah v0.2.3: 337 - 238 - 177  [0.566] 752
+Elo difference: 46.01 +/- 21.88, LOS: 100.00 %, DrawRatio: 23.54 %
+SPRT: llr 2.95 (100.1%), lbound -2.94, ubound 2.94 - H1 was accepted
+
+
+
 
 ### Future Improvements
 
