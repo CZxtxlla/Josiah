@@ -148,10 +148,16 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         }
     }
 
+
     int kingSq = __builtin_ctzll(pos->pieces[(pos->stm == WHITE) ? WHITE_KING : BLACK_KING]);
     int inCheck = isSquareAttacked(pos, kingSq, pos->xstm);
 
     int pvNode = (beta - alpha > 1);
+
+    // IIR
+    if (!inCheck && !pvNode && depth >= 4 && !ttMove) {
+        depth--;
+    }
 
     // RFP
     if (!pvNode && !inCheck && depth <= 3) {
@@ -370,6 +376,7 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
 
     Undo undo;
     for (int j = 1; j <= maxDepth; j++) {
+        // aspiration window
         int increase = 25; // amount to increase window if fail high/fail low
         int alpha = (j >= 4) ? (prevScore - increase) : -INFINITY_SCORE;
         int beta = (j >= 4) ? (prevScore + increase) : INFINITY_SCORE;
