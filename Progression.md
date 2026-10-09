@@ -249,9 +249,10 @@ SPRT: llr 2.95 (100.3%), lbound -2.94, ubound 2.94 - H1 was accepted
 These are just some performance enhancements that I noticed in other engines that I would like to implement eventually.
 - PEXT instruction magic bitboards. (wont really give a performance improvement but a faster boot potentially)
 - Bucketed TT
-- IIR https://talkchess.com/forum3/viewtopic.php?f=7&t=74769&sid=64085e3396554f0fba414404445b3120
+- IIR https://talkchess.com/forum3/viewtopic.php?f=7&t=74769&sid=64085e3396554f0fba414404445b3120 X
 - Persistant history table across the whole game
 - SPSA pruning parameters tuning
+- Hook my own movegen up to Fathom endgame probing
 
 
 ### Things I have tried that haven't panned out (some might be worth revisiting later)

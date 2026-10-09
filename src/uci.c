@@ -2,14 +2,14 @@
 #include "movegen.h"
 #include "perft.h"
 #include "transposition.h"
+#include "syzygy/tbprobe.h"
+#include "search.h"
+#include "utils.h"
 
 #include <string.h>
 #include <stdlib.h>
 
-#include "search.h"
-#include "utils.h"
-
-#define VERSION "0.0"
+#define VERSION "0.3.0"
 
 Move parseMove(char* moves, Position* pos) {
     MoveList movesl;
@@ -181,6 +181,9 @@ void uciLoop() {
         if (!strncmp(line, "uci", 3)) {
             printf("id name Josiah " VERSION "\n");
             printf("id author Charles Zitella\n");
+            printf("option name Hash type spin default 16 min 1 max 32768\n");
+            printf("option name SyzygyPath type string default <empty>\n");
+
             printf("uciok\n");
 
         } else if (!strncmp(line, "go", 2)) {
@@ -190,6 +193,31 @@ void uciLoop() {
         } else if (!strncmp(line, "ucinewgame", 10)) {
             ttClear();
             parseFen(STARTPOS, &pos);
+        } else if (!strncmp(line, "setoption name Hash value ", 26)) {
+            int hash_size = atoi(line + 26);
+            if (hash_size < 1) {
+                hash_size = 1;
+            }
+            if (hash_size > 32768) {
+                hash_size = 32768;
+            }
+
+            ttInit(hash_size);
+            printf("info string Hash size set to %d MB\n", hash_size);
+        } else if (!strncmp(line, "setoption name SyzygyPath value ", 32)) {
+            char* path = line + 32;
+            if (tb_init(path)) {
+                syzygyEnabled = 1;
+                if (TB_LARGEST > 0) {
+                    printf("info string Found %d-man tablebases\n", TB_LARGEST);
+                } else {
+                    printf("info string Syzygy tablebases successfully loaded from %s\n", path);
+                }
+            } else {
+                syzygyEnabled = 0;
+                printf("info string Failed to load Syzygy tablebases from %s\n", path);
+            }
+
         } else if (!strncmp(line, "perft", 5)) {
             strtok(line, " ");
             char* d = strtok(NULL, " ") ? : "5";

@@ -9,6 +9,8 @@
 
 extern int timeLimit;
 
+extern int syzygyEnabled;
+
 typedef struct {
     long long nodes;
     int ply;

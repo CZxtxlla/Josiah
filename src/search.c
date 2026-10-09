@@ -8,6 +8,7 @@
 #include "string.h"
 
 int timeLimit = 100000000;
+int syzygyEnabled = 0;
 
 int isRepetition(Position* pos) {
     if (pos->half_moves < 4) {
