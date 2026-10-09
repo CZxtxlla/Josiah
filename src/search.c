@@ -154,15 +154,21 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
 
     int pvNode = (beta - alpha > 1);
 
+    int staticEval = inCheck ? 0 : evaluateLegalPos(pos);
+    state->staticEvals[state->ply] = staticEval;
+
+    int improving = 0;
+    if (!inCheck && state->ply >= 2) {
+        improving = (staticEval > state->staticEvals[state->ply - 2]);
+    }
+
     // IIR
     if (!inCheck && !pvNode && depth >= 4 && !ttMove) {
         depth--;
     }
 
     // RFP
-    if (!pvNode && !inCheck && depth <= 3) {
-        int staticEval = evaluateLegalPos(pos);
-
+    if (!pvNode && !inCheck && depth <= (improving ? 3 : 4)) {
         if (depth == 1 && staticEval - PIECE_TO_SCORE[BISHOP] > beta) {
             return beta;
         }
@@ -177,7 +183,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     // NMP
     Undo undo;
     if (!pvNode && nonPawnMaterial(pos) && !inCheck) {
-        int R = 3; // reduction
+        int R = 3 + !improving; // reduction
         makeNullMove(pos, &undo);
         state->ply++;
         int nullDepth = depth - R - 1;
@@ -205,7 +211,6 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     MovePicker picker;
     initPicker(&picker, ttMove, state);
 
-    int staticEval = -INFINITY_SCORE;
     int movesPruned = 0;
     
     Move move;
@@ -249,6 +254,15 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
             //int oppInCheck = isSquareAttacked(pos, oppKingSq, pos->stm);
             if (depth > 3 && legalMovesPlayed > 2 && !inCheck && !IsCapture(move) && !IsPromo(move)) {
                 int reduction = (legalMovesPlayed > 6) ? 2 : 1;
+
+                if (!improving) {
+                    reduction++;
+                }
+
+                int lmrDepth = depth - 1 - reduction;
+                if (lmrDepth < 0) {
+                    lmrDepth = 0;
+                }
 
                 score = -negaMax(pos, depth - 1 - reduction, -alpha - 1, -alpha, state);
 

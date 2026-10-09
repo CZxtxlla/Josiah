@@ -227,12 +227,21 @@ Elo difference: 46.01 +/- 21.88, LOS: 100.00 %, DrawRatio: 23.54 %
 SPRT: llr 2.95 (100.1%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.2.5 plans to add IIR. Here is the result of sprt with version 0.2.4:
+Version 0.2.5 adds IIR. Here is the result of sprt with version 0.2.4:
 
 Score of Josiah v0.2.5 vs Josiah v0.2.4: 1600 - 1461 - 1177  [0.516] 4238
 Score of Josiah v0.2.5 vs Josiah v0.2.4: 1600 - 1461 - 1177  [0.516] 4238
 Elo difference: 11.40 +/- 8.89, LOS: 99.40 %, DrawRatio: 27.77 %
 SPRT: llr 2.95 (100.3%), lbound -2.94, ubound 2.94 - H1 was accepted
+
+
+Version 0.2.6 adds the improving modifier for RFP, NMP, LMR. Here is the result of sprt with version 0.2.5:
+
+Score of Josiah v0.2.6 vs Josiah v0.2.5: 1294 - 1165 - 926  [0.519] 3385
+Score of Josiah v0.2.6 vs Josiah v0.2.5: 1294 - 1165 - 926  [0.519] 3385
+Elo difference: 13.25 +/- 9.98, LOS: 99.54 %, DrawRatio: 27.36 %
+SPRT: llr 2.95 (100.3%), lbound -2.94, ubound 2.94 - H1 was accepted
+
 
 
 ### Future Improvements

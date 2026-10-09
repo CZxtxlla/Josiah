@@ -21,6 +21,8 @@ typedef struct {
     int history[2][64][64]; // stm, from, to
     int killer[2][MAX_SEARCH_DEPTH]; // 0 higher priority (more recent)
 
+    int staticEvals[MAX_SEARCH_DEPTH]; // used for improving
+
 } SearchState;
 
 
