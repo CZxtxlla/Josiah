@@ -1,5 +1,6 @@
 /binaries
+/tablebases
 .venv
 .vscode
 .epd
-.json
+*.json

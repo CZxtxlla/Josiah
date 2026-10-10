@@ -6,6 +6,7 @@
 #include "transposition.h"
 #include <limits.h>
 #include "string.h"
+#include "syzygy/tbprobe.h"
 
 int timeLimit = 100000000;
 int syzygyEnabled = 0;
@@ -136,16 +137,58 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     uint8_t ttFlag = 0;
 
     int ttHit = ttProbe(pos->hash, depth, &ttMove, &ttScore, &ttFlag);
-    if (ttMove != 0) {
-        if (!moveIsLegal(pos, ttMove)) {
-            // collision
+    if (ttHit) {
+        if (ttMove != 0 && !moveIsLegal(pos, ttMove)) {
             ttMove = 0;
-        } else {
-            if (ttHit) {
-                if (ttFlag == EXACT || (ttFlag == LOWERBOUND && ttScore >= beta) || (ttFlag == UPPERBOUND && ttScore <= alpha)) {
-                    return ttScore;
-                }
+        }
+        if (ttHit) {
+            if (ttFlag == EXACT || (ttFlag == LOWERBOUND && ttScore >= beta) || (ttFlag == UPPERBOUND && ttScore <= alpha)) {
+                return ttScore;
             }
+        }
+
+    }
+
+    // tablebase
+    int pieceCount = __builtin_popcountll(pos->occupancies[BOTH]);
+
+    if (syzygyEnabled && pieceCount <= TB_LARGEST && pos->castling == 0) {
+        unsigned wdl = tb_probe_wdl(
+            pos->occupancies[WHITE],
+            pos->occupancies[BLACK],
+            pos->pieces[WHITE_KING] | pos->pieces[BLACK_KING],
+            pos->pieces[WHITE_QUEEN] | pos->pieces[BLACK_QUEEN],
+            pos->pieces[WHITE_ROOK] | pos->pieces[BLACK_ROOK],
+            pos->pieces[WHITE_BISHOP] | pos->pieces[BLACK_BISHOP],
+            pos->pieces[WHITE_KNIGHT] | pos->pieces[BLACK_KNIGHT],
+            pos->pieces[WHITE_PAWN] | pos->pieces[BLACK_PAWN],
+            pos->half_moves,
+            pos->castling,
+            pos->ep_square == -1 ? 0 : pos->ep_square,
+            pos->stm == WHITE
+        );
+
+        if (wdl != TB_RESULT_FAILED) {
+            int tbScore;
+
+            if (wdl == TB_WIN) {
+                tbScore = MATE_SCORE - MAX_SEARCH_DEPTH - state->ply;
+            } else if (wdl == TB_LOSS) {
+                tbScore = -MATE_SCORE + MAX_SEARCH_DEPTH + state->ply;
+            } else {
+                tbScore = 0;
+            }
+
+            uint8_t tbFlag = EXACT;
+            if (tbScore <= alpha) {
+                tbFlag = UPPERBOUND;
+            } else if (tbScore >= beta) {
+                tbFlag = LOWERBOUND;
+            }
+
+            ttStore(pos->hash, MAX_SEARCH_DEPTH, 0, tbScore, tbFlag);
+
+            return tbScore;
         }
     }
 
@@ -365,6 +408,57 @@ void iterativeDeepening(Position* pos, int maxDepth, int searchTimeLimit) {
         timeLimit = 99999999;
     }
     maxDepth = (maxDepth > 0) ? maxDepth : MAX_SEARCH_DEPTH;
+
+    // tablebase
+    int pieceCount = __builtin_popcountll(pos->occupancies[BOTH]);
+
+    if (syzygyEnabled && pieceCount <= TB_LARGEST && pos->castling == 0) {
+        unsigned rootResult = tb_probe_root(
+            pos->occupancies[WHITE],
+            pos->occupancies[BLACK],
+            pos->pieces[WHITE_KING] | pos->pieces[BLACK_KING],
+            pos->pieces[WHITE_QUEEN] | pos->pieces[BLACK_QUEEN],
+            pos->pieces[WHITE_ROOK] | pos->pieces[BLACK_ROOK],
+            pos->pieces[WHITE_BISHOP] | pos->pieces[BLACK_BISHOP],
+            pos->pieces[WHITE_KNIGHT] | pos->pieces[BLACK_KNIGHT],
+            pos->pieces[WHITE_PAWN] | pos->pieces[BLACK_PAWN],
+            pos->half_moves,
+            pos->castling,
+            pos->ep_square == -1 ? 0 : pos->ep_square,
+            pos->stm == WHITE,
+            NULL
+        );
+
+        if (rootResult != TB_RESULT_FAILED) {
+            unsigned tbFrom = TB_GET_FROM(rootResult);
+            unsigned tbTo = TB_GET_TO(rootResult);
+            unsigned tbProm = TB_GET_PROMOTES(rootResult);
+
+            char promChar = '\0';
+            if (tbProm == 1) promChar = 'q';
+            else if (tbProm == 2) promChar = 'r';
+            else if (tbProm == 3) promChar = 'b'; 
+            else if (tbProm == 4) promChar = 'n';
+
+            unsigned wdl = TB_GET_WDL(rootResult);
+
+            if (wdl == TB_WIN) {
+                printf("info depth 1 score mate 50 time 0 nodes 0\n");
+            } else if (wdl == TB_LOSS) {
+                printf("info depth 1 score mate -50 time 0 nodes 0\n");
+            } else {
+                printf("info depth 1 score cp 0 time 0 nodes 0\n");
+            }
+
+            if (promChar != '\0') {
+                printf("bestmove %c%c%c%c%c\n", (tbFrom % 8) + 'a', (tbFrom / 8) + '1', (tbTo % 8) + 'a', (tbTo / 8) + '1', promChar);
+
+            } else {
+                printf("bestmove %c%c%c%c\n", (tbFrom % 8) + 'a', (tbFrom / 8) + '1', (tbTo % 8) + 'a', (tbTo / 8) + '1');
+            }
+            return;
+        }
+    }
 
     int32_t ttScore = 0;
     Move ttMove = 0; 

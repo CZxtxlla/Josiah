@@ -257,6 +257,11 @@ Elo difference: 51.73 +/- 22.95, LOS: 100.00 %, DrawRatio: 28.93 %
 SPRT: llr 2.95 (100.1%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
+Version 0.2.7 adds Syzygy tablebases with Fathom. Here is the result of sprt with version 0.2.6.2:
+
+Score of Josiah v0.2.7 vs Josiah v0.2.6.2: 342 - 246 - 246  [0.558] 834
+Elo difference: 40.17 +/- 19.90, LOS: 100.00 %, DrawRatio: 29.50 %
+SPRT: llr 2.95 (100.0%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
 ### Future Improvements

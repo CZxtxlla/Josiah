@@ -5,7 +5,7 @@
 #include "position.h"
 
 #define MAX_SEARCH_DEPTH 128
-#define INFINITY_SCORE 50000
+#define INFINITY_SCORE 9999999
 
 extern int timeLimit;
 

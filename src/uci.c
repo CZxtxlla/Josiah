@@ -206,6 +206,8 @@ void uciLoop() {
             printf("info string Hash size set to %d MB\n", hash_size);
         } else if (!strncmp(line, "setoption name SyzygyPath value ", 32)) {
             char* path = line + 32;
+            path[strcspn(path, "\r\n")] = '\0';
+
             if (tb_init(path)) {
                 syzygyEnabled = 1;
                 if (TB_LARGEST > 0) {
