@@ -169,18 +169,16 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     }
 
     // RFP
-    if (!pvNode && !inCheck && depth <= (improving ? 4 : 3)) {
-        if (depth == 1 && staticEval - PIECE_TO_SCORE[BISHOP] > beta) {
-            return beta;
+    int rfpMaxDepth = 5;
+    if (!pvNode && !inCheck && depth <= rfpMaxDepth) {
+        int rfpMargin = 80 * depth;
+
+        if (!improving) {
+            rfpMargin += 50;
         }
-        if (depth == 2 && staticEval - PIECE_TO_SCORE[ROOK] > beta) {
-            return beta;
-        }
-        if (depth == 3 && staticEval - PIECE_TO_SCORE[QUEEN] > beta) {
-            depth--; // demote search
-        }
-        if (depth == 4 && staticEval - (PIECE_TO_SCORE[QUEEN] + PIECE_TO_SCORE[KNIGHT]) > beta) {
-            depth--;
+
+        if (staticEval - rfpMargin >= beta) {
+            return staticEval;
         }
     }
 

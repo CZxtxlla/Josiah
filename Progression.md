@@ -243,6 +243,21 @@ Elo difference: 13.25 +/- 9.98, LOS: 99.54 %, DrawRatio: 27.36 %
 SPRT: llr 2.95 (100.3%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
+Version 0.2.6.1 fixes an issue with the LMR improvement bound not being used, and also fixes the default from not improving to improving. Here is the result of sprt with version 0.2.6:
+
+Score of Josiah v0.2.6.1 vs Josiah v0.2.6: 3655 - 3577 - 2768  [0.504] 10000
+Elo difference: 2.71 +/- 5.79, LOS: 82.05 %, DrawRatio: 27.68 %
+SPRT: llr -1.50 (51.0%), lbound -2.94, ubound 2.94
+
+
+Version 0.2.6.2 improves RFP and and fixes how the improving modifier affects it. Here is the result of sprt with version 0.2.6.1:
+
+Score of Josiah v0.2.6.2 vs Josiah v0.2.6.1: 273 - 179 - 184  [0.574] 636
+Elo difference: 51.73 +/- 22.95, LOS: 100.00 %, DrawRatio: 28.93 %
+SPRT: llr 2.95 (100.1%), lbound -2.94, ubound 2.94 - H1 was accepted
+
+
+
 
 ### Future Improvements
 
