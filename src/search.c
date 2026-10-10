@@ -158,7 +158,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     int staticEval = inCheck ? 0 : evaluateLegalPos(pos);
     state->staticEvals[state->ply] = staticEval;
 
-    int improving = 0;
+    int improving = 1;
     if (!inCheck && state->ply >= 2) {
         improving = (staticEval > state->staticEvals[state->ply - 2]);
     }
@@ -169,7 +169,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
     }
 
     // RFP
-    if (!pvNode && !inCheck && depth <= (improving ? 3 : 4)) {
+    if (!pvNode && !inCheck && depth <= (improving ? 4 : 3)) {
         if (depth == 1 && staticEval - PIECE_TO_SCORE[BISHOP] > beta) {
             return beta;
         }
@@ -179,12 +179,15 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
         if (depth == 3 && staticEval - PIECE_TO_SCORE[QUEEN] > beta) {
             depth--; // demote search
         }
+        if (depth == 4 && staticEval - (PIECE_TO_SCORE[QUEEN] + PIECE_TO_SCORE[KNIGHT]) > beta) {
+            depth--;
+        }
     }
 
     // NMP
     Undo undo;
     if (!pvNode && nonPawnMaterial(pos) && !inCheck) {
-        int R = 3 + !improving; // reduction
+        int R = 3 + improving; // reduction
         makeNullMove(pos, &undo);
         state->ply++;
         int nullDepth = depth - R - 1;
@@ -265,7 +268,7 @@ int negaMax(Position* pos, int depth, int alpha, int beta, SearchState* state) {
                     lmrDepth = 0;
                 }
 
-                score = -negaMax(pos, depth - 1 - reduction, -alpha - 1, -alpha, state);
+                score = -negaMax(pos, lmrDepth, -alpha - 1, -alpha, state);
 
                 if (score <= alpha) {
                     // skip rest of search
