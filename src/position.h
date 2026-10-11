@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include <stdio.h>
+#include <stdalign.h>
 #include "bits.h"
 
 extern const int CHAR_TO_PIECE[];
@@ -15,6 +16,13 @@ extern const char PIECE_TO_CHAR[];
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define KIWIPETE "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -"
+
+#define ACC_SIZE 256
+
+typedef struct {
+    alignas(32) int16_t white[ACC_SIZE];
+    alignas(32) int16_t black[ACC_SIZE];
+} Accumulator;
 
 typedef struct {
     Bitboard occupancies[3]; // 0 = white, 1 = black, 2 = both
@@ -32,6 +40,10 @@ typedef struct {
 
     uint64_t history[2048];
     int historyPly;
+
+    // accumulator
+    Accumulator nnueAcc;
+
 } Position;
 
 typedef struct {

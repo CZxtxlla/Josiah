@@ -1,6 +1,7 @@
 #include "move.h"
 #include "zobrist.h"
 #include "attacks.h"
+#include "nnue/inference.h"
 
 const int pieceType[13] = {
     PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING,
@@ -369,9 +370,12 @@ void makeMove(Position* pos, Move move, Undo* undo) {
     // update hash
     pos->hash ^= ZOBRIST_PIECES[piece][from];
     pos->hash ^= ZOBRIST_PIECES[piece][to];
-
+    // update mailbox
     pos->squares[from] = PIECE_NONE;
     pos->squares[to] = piece;
+    // update accumulator
+    updateAccumulator(pos, model, piece, from, 0);
+
     if (IsKingCastle(move)) {
         if (pos->stm == WHITE) {
             FlipBits(pos->pieces[WHITE_ROOK], 5, 7);
@@ -381,6 +385,8 @@ void makeMove(Position* pos, Move move, Undo* undo) {
             pos->hash ^= ZOBRIST_PIECES[WHITE_ROOK][7];
             pos->squares[7] = PIECE_NONE;
             pos->squares[5] = WHITE_ROOK;
+            updateAccumulator(pos, model, WHITE_ROOK, 7, 0);
+            updateAccumulator(pos, model, WHITE_ROOK, 5, 1);
         } else {
             FlipBits(pos->pieces[BLACK_ROOK], 61, 63);
             FlipBits(pos->occupancies[BLACK], 61, 63);
@@ -389,6 +395,8 @@ void makeMove(Position* pos, Move move, Undo* undo) {
             pos->hash ^= ZOBRIST_PIECES[BLACK_ROOK][63];
             pos->squares[63] = PIECE_NONE;
             pos->squares[61] = BLACK_ROOK;
+            updateAccumulator(pos, model, BLACK_ROOK, 63, 0);
+            updateAccumulator(pos, model, BLACK_ROOK, 61, 1);
         }
     } else if (IsQueenCastle(move)) {
         if (pos->stm == WHITE) {
@@ -399,6 +407,8 @@ void makeMove(Position* pos, Move move, Undo* undo) {
             pos->hash ^= ZOBRIST_PIECES[WHITE_ROOK][3];
             pos->squares[0] = PIECE_NONE;
             pos->squares[3] = WHITE_ROOK;
+            updateAccumulator(pos, model, WHITE_ROOK, 0, 0);
+            updateAccumulator(pos, model, WHITE_ROOK, 3, 1);
         } else {
             FlipBits(pos->pieces[BLACK_ROOK], 56, 59);
             FlipBits(pos->occupancies[BLACK], 56, 59);
@@ -407,6 +417,8 @@ void makeMove(Position* pos, Move move, Undo* undo) {
             pos->hash ^= ZOBRIST_PIECES[BLACK_ROOK][59];
             pos->squares[56] = PIECE_NONE;
             pos->squares[59] = BLACK_ROOK;
+            updateAccumulator(pos, model, BLACK_ROOK, 56, 0);
+            updateAccumulator(pos, model, BLACK_ROOK, 59, 1);
         }
 
     } else if (IsCapture(move)) {
@@ -420,6 +432,7 @@ void makeMove(Position* pos, Move move, Undo* undo) {
         FlipBit(pos->occupancies[pos->xstm], capsq);
         FlipBit(pos->occupancies[BOTH], capsq);
         pos->hash ^= ZOBRIST_PIECES[captured][capsq];
+        updateAccumulator(pos, model, captured, capsq, 0);
     }
 
     if (undo->ep_square != -1) {
@@ -434,13 +447,16 @@ void makeMove(Position* pos, Move move, Undo* undo) {
         pos->hash ^= ZOBRIST_PIECES[promotedType][to];
         pos->squares[to] = promotedType;
         pos->ep_square = -1;
+        updateAccumulator(pos, model, promotedType, to, 1);
 
     } else if (IsDouble(move)) {
         // double pawn push
         pos->ep_square = (pos->stm == WHITE) ? (to - 8) : (to + 8);
         pos->hash ^= ZOBRIST_EP[pos->ep_square % 8];
+        updateAccumulator(pos, model, piece, to, 1);
     } else {
         pos->ep_square = -1;
+        updateAccumulator(pos, model, piece, to, 1);
     }
 
     pos->hash ^= ZOBRIST_CASTLE[undo->castling];
@@ -475,11 +491,16 @@ void unmakeMove(Position* pos, Move move, Undo* undo) {
     pos->stm ^= 1;
     pos->xstm ^= 1;
 
+    updateAccumulator(pos, model, piece, from, 1);
+
     if (IsPromo(move)) {
         int promoted = PromoType(move) + ((pos->stm == WHITE) ? 0 : 6);
         FlipBit(pos->pieces[piece], to);
         FlipBit(pos->pieces[promoted], to);
         pos->squares[to] = piece;
+        updateAccumulator(pos, model, promoted, to, 0);
+    } else {
+        updateAccumulator(pos, model, piece, to, 0);
     }
 
     // move piece back to where it was
@@ -498,12 +519,16 @@ void unmakeMove(Position* pos, Move move, Undo* undo) {
             FlipBits(pos->occupancies[BOTH], 5, 7);
             pos->squares[5] = PIECE_NONE;
             pos->squares[7] = WHITE_ROOK;
+            updateAccumulator(pos, model, WHITE_ROOK, 5, 0);
+            updateAccumulator(pos, model, WHITE_ROOK, 7, 1);
         } else {
             FlipBits(pos->pieces[BLACK_ROOK], 61, 63);
             FlipBits(pos->occupancies[BLACK], 61, 63);
             FlipBits(pos->occupancies[BOTH], 61, 63);
             pos->squares[61] = PIECE_NONE;
             pos->squares[63] = BLACK_ROOK;
+            updateAccumulator(pos, model, BLACK_ROOK, 61, 0);
+            updateAccumulator(pos, model, BLACK_ROOK, 63, 1);
         }
     } else if (IsQueenCastle(move)) {
         // move rook back
@@ -513,12 +538,16 @@ void unmakeMove(Position* pos, Move move, Undo* undo) {
             FlipBits(pos->occupancies[BOTH], 0, 3);
             pos->squares[3] = PIECE_NONE;
             pos->squares[0] = WHITE_ROOK;
+            updateAccumulator(pos, model, WHITE_ROOK, 3, 0);
+            updateAccumulator(pos, model, WHITE_ROOK, 0, 1);
         } else {
             FlipBits(pos->pieces[BLACK_ROOK], 56, 59);
             FlipBits(pos->occupancies[BLACK], 56, 59);
             FlipBits(pos->occupancies[BOTH], 56, 59);
             pos->squares[59] = PIECE_NONE;
             pos->squares[56] = BLACK_ROOK;
+            updateAccumulator(pos, model, BLACK_ROOK, 59, 0);
+            updateAccumulator(pos, model, BLACK_ROOK, 56, 1);
         }
     } else if (IsCapture(move)) {
         // restore captured piece
@@ -532,6 +561,8 @@ void unmakeMove(Position* pos, Move move, Undo* undo) {
         FlipBit(pos->occupancies[BOTH], capsq);
 
         pos->squares[capsq] = undo->capture_piece;
+
+        updateAccumulator(pos, model, undo->capture_piece, capsq, 1);
     }
 
     pos->full_moves -= (pos->stm == BLACK);

@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Wshadow -std=gnu11
 
-SOURCES = $(wildcard src/*.c src/syzygy/*.c)
+SOURCES = $(wildcard src/*.c src/syzygy/*.c src/nnue/*.c)
 OBJECTS = $(SOURCES:.c=.o)
 
 all: release
@@ -16,7 +16,7 @@ debug: CFLAGS += -g -O0
 debug: Josiah
 
 Josiah: $(OBJECTS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -lm
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

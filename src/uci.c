@@ -5,6 +5,7 @@
 #include "syzygy/tbprobe.h"
 #include "search.h"
 #include "utils.h"
+#include "nnue/inference.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -97,6 +98,8 @@ void parsePosition(char* line, Position* pos) {
             parseFen(ptr, pos);
         }
     }
+
+    initAccumulator(pos, model);
 
     ptr = strstr(line, "moves");
 

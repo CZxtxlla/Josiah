@@ -1,5 +1,5 @@
 #include "evaluate.h"
-
+#include "nnue/inference.h"
 // piece square tables (copied from wiki)
 // must flip rank
 
@@ -112,6 +112,7 @@ int gamePhase(Position* pos) {
 }
 
 int evaluateLegalPos(Position* pos) {
+    /*
     int phase = gamePhase(pos);
     int score = 0;
 
@@ -138,4 +139,6 @@ int evaluateLegalPos(Position* pos) {
     }
 
     return (pos->stm == WHITE) ? score : -score;
+    */
+    return evaluateNNUEQuantized(pos, model);
 }

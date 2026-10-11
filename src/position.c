@@ -1,4 +1,5 @@
 #include "position.h"
+#include "nnue/inference.h"
 #include "zobrist.h"
 #include <string.h>
 
@@ -129,4 +130,6 @@ void parseFen(char* fen, Position* pos) {
 
     pos->hash = ZobristHash(pos); // initialize zobrist hash
     pos->historyPly = 0;
+
+    initAccumulator(pos, model);
 }
