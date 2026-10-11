@@ -282,6 +282,7 @@ These are just some performance enhancements that I noticed in other engines tha
 - SPSA pruning parameters tuning
 - Hook my own movegen up to Fathom endgame probing
 - Better NNUE
+- SIMD NNUE evaluation
 
 
 ### Things I have tried that haven't panned out (some might be worth revisiting later)

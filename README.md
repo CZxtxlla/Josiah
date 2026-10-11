@@ -23,6 +23,7 @@ https://www.youtube.com/channel/UCB9-prLkPwgvlKKqDgXhsMQ/videos)
   - IIR
   - aspiration windows
 - UCI compatible
+- NNUE evaluation
 
 ### Resources
 ---
