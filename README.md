@@ -14,11 +14,14 @@ https://www.youtube.com/channel/UCB9-prLkPwgvlKKqDgXhsMQ/videos)
 - Bitboard and mailbox board representations
 - 16 bit move encoding
 - Staged movegen
+- Syzygy Tablebases
 - Iterative deepening alpha beta pruning search
   - Quiescent search
   - Transposition Table
   - PVS, RFP, NMP, LMR
   - killer moves, history moves
+  - IIR
+  - aspiration windows
 - UCI compatible
 
 ### Resources
@@ -29,3 +32,4 @@ https://www.youtube.com/channel/UCB9-prLkPwgvlKKqDgXhsMQ/videos)
 - https://talkchess.com/viewtopic.php?t=41302&start=1
 - https://chess.stackexchange.com/questions/15856/implementing-late-move-reduction-lmr-inside-iterative-deepening
 - https://rustic-chess.org/search/ordering/killers.html Very nice explanation of killer moves.
+- https://hgm.nubati.net/book_format.html Polyglot format for opening book

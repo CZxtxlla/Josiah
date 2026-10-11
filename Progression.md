@@ -264,6 +264,10 @@ Elo difference: 40.17 +/- 19.90, LOS: 100.00 %, DrawRatio: 29.50 %
 SPRT: llr 2.95 (100.0%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
+Version 0.3.0 plans to add nnue evaluation, using the nnue trained on my previous engine.
+
+
+
 ### Future Improvements
 
 These are just some performance enhancements that I noticed in other engines that I would like to implement eventually.
