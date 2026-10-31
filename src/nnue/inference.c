@@ -212,9 +212,21 @@ int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
     const int16_t* nstmAcc = (pos->stm == WHITE) ? pos->nnueAcc.black : pos->nnueAcc.white;
 
     // perspective concat
-    for (int i = 0; i < ACC_SIZE; i++) {
-        currentInput[i] = clippedReluInt(stmAcc[i]);
-        currentInput[ACC_SIZE + i] = clippedReluInt(nstmAcc[i]);
+    for (int i = 0; i < ACC_SIZE; i+=16) {
+        __m256i stm = _mm256_load_si256((__m256i*)&stmAcc[i]);
+        __m256i nstm = _mm256_load_si256((__m256i*)&nstmAcc[i]);
+
+        __m128i stm_low = _mm256_castsi256_si128(stm);
+        __m128i stm_high = _mm256_extracti128_si256(stm, 1);
+
+        __m128i nstm_low = _mm256_castsi256_si128(nstm);
+        __m128i nstm_high = _mm256_extracti128_si256(nstm, 1);
+
+        __m128i stm_packed = _mm_packus_epi16(stm_low, stm_high);
+        __m128i nstm_packed = _mm_packus_epi16(nstm_low, nstm_high);
+
+        _mm_store_si128((__m128i*)&currentInput[i], stm_packed);
+        _mm_store_si128((__m128i*)&currentInput[ACC_SIZE + i], nstm_packed);
     }
 
     // hidden layers
@@ -227,43 +239,66 @@ int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
 
         __m256i ones = _mm256_set1_epi16(1);
 
-        for (int i = 0; i < hl->outFeatures; i++) {
-            __m256i sum32 = _mm256_setzero_si256();
+        for (int i = 0; i < hl->outFeatures; i+=2) {
+            __m256i sum32_0 = _mm256_setzero_si256();
+            __m256i sum32_1 = _mm256_setzero_si256();
 
             for (int j = 0; j < hl->inFeatures; j += 32) {
                 __m256i in = _mm256_loadu_si256((__m256i*)&currentInput[j]);
-                __m256i weight = _mm256_loadu_si256((__m256i*)&hl->weight[i * hl->inFeatures + j]);
+                
+                __m256i weight_0 = _mm256_loadu_si256((__m256i*)&hl->weight[i * hl->inFeatures + j]);
+                __m256i res16_0 = _mm256_maddubs_epi16(in, weight_0);
+                __m256i res32_0 = _mm256_madd_epi16(res16_0, ones);
+                sum32_0 = _mm256_add_epi32(sum32_0, res32_0);
 
-                __m256i res16 = _mm256_maddubs_epi16(in, weight);
-
-                __m256i res32 = _mm256_madd_epi16(res16, ones);
-
-                sum32 = _mm256_add_epi32(sum32, res32);
+                __m256i weight_1 = _mm256_loadu_si256((__m256i*)&hl->weight[(i + 1) * hl->inFeatures + j]);
+                __m256i res16_1 = _mm256_maddubs_epi16(in, weight_1);
+                __m256i res32_1 = _mm256_madd_epi16(res16_1, ones);
+                sum32_1 = _mm256_add_epi32(sum32_1, res32_1);
             }
 
-            __m128i vlow = _mm256_castsi256_si128(sum32);
-            __m128i vhigh = _mm256_extracti128_si256(sum32, 1);
-            __m128i sum128 = _mm_add_epi32(vlow, vhigh);
-            
-            sum128 = _mm_add_epi32(sum128, _mm_shuffle_epi32(sum128, _MM_SHUFFLE(1, 0, 3, 2)));
-            sum128 = _mm_add_epi32(sum128, _mm_shuffle_epi32(sum128, _MM_SHUFFLE(2, 3, 0, 1)));
-            
-            sums[i] = hl->bias[i] + _mm_cvtsi128_si32(sum128);
-        }
+            __m128i vlow_0 = _mm256_castsi256_si128(sum32_0);
+            __m128i vhigh_0 = _mm256_extracti128_si256(sum32_0, 1);
+            __m128i sum128_0 = _mm_add_epi32(vlow_0, vhigh_0);
+            sum128_0 = _mm_add_epi32(sum128_0, _mm_shuffle_epi32(sum128_0, _MM_SHUFFLE(1, 0, 3, 2)));
+            sum128_0 = _mm_add_epi32(sum128_0, _mm_shuffle_epi32(sum128_0, _MM_SHUFFLE(2, 3, 0, 1)));
+            sums[i + 0] = hl->bias[i + 0] + _mm_cvtsi128_si32(sum128_0);
 
-        for (int i = 0; i < hl->outFeatures; i++) {
-            if (l < model->numHidden - 1) {
-                nextInput[i] = clippedReluInt(sums[i] >> 6);
-            } else {
-                finalLogit = sums[i];
-            }
+            __m128i vlow_1 = _mm256_castsi256_si128(sum32_1);
+            __m128i vhigh_1 = _mm256_extracti128_si256(sum32_1, 1);
+            __m128i sum128_1 = _mm_add_epi32(vlow_1, vhigh_1);
+            sum128_1 = _mm_add_epi32(sum128_1, _mm_shuffle_epi32(sum128_1, _MM_SHUFFLE(1, 0, 3, 2)));
+            sum128_1 = _mm_add_epi32(sum128_1, _mm_shuffle_epi32(sum128_1, _MM_SHUFFLE(2, 3, 0, 1)));
+            sums[i + 1] = hl->bias[i + 1] + _mm_cvtsi128_si32(sum128_1);
         }
 
         if (l < model->numHidden - 1) {
-            currentDim = hl->outFeatures;
-            for (int i = 0; i < currentDim; i++) {
-                currentInput[i] = nextInput[i];
+
+            for (int i = 0; i < hl->outFeatures; i+=16) {
+                __m128i v0 = _mm_loadu_si128((__m128i*)&sums[i + 0]);
+                __m128i v1 = _mm_loadu_si128((__m128i*)&sums[i + 4]);
+                __m128i v2 = _mm_loadu_si128((__m128i*)&sums[i + 8]);
+                __m128i v3 = _mm_loadu_si128((__m128i*)&sums[i + 12]);
+
+                v0 = _mm_srai_epi32(v0, 6);
+                v1 = _mm_srai_epi32(v1, 6);
+                v2 = _mm_srai_epi32(v2, 6);
+                v3 = _mm_srai_epi32(v3, 6);
+
+                __m128i p0 = _mm_packs_epi32(v0, v1);
+                __m128i p1 = _mm_packs_epi32(v2, v3);
+
+                __m128i packed = _mm_packus_epi16(p0, p1);
+
+                _mm_store_si128((__m128i*)&nextInput[i], packed);
             }
+
+            for (int i = 0; i < hl->outFeatures; i+=16) {
+                __m128i copy_vec = _mm_load_si128((__m128i*)&nextInput[i]);
+                _mm_store_si128((__m128i*)&currentInput[i], copy_vec);
+            }
+        } else {
+            finalLogit = sums[0];
         }
     }
 

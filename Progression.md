@@ -278,6 +278,12 @@ Elo difference: 275.28 +/- 64.51, LOS: 100.00 %, DrawRatio: 17.36 %
 SPRT: llr 2.95 (100.2%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
+Version 0.3.2 adds some more simd optimizations to perspective concat and clipped relu. Here is the result of sprt with version 0.3.1:
+
+Score of Josiah v0.3.2 vs Josiah v0.3.1: 530 - 428 - 436  [0.537] 1394
+Elo difference: 25.47 +/- 15.15, LOS: 99.95 %, DrawRatio: 31.28 %
+SPRT: llr 2.96 (100.7%), lbound -2.94, ubound 2.94 - H1 was accepted
+
 ### Future Improvements
 
 These are just some performance enhancements that I noticed in other engines that I would like to implement eventually.
