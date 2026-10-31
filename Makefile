@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Wshadow -std=gnu11
+CFLAGS = -Wall -Wextra -Wshadow -std=gnu11 -mavx2
 
 SOURCES = $(wildcard src/*.c src/syzygy/*.c src/nnue/*.c)
 OBJECTS = $(SOURCES:.c=.o)

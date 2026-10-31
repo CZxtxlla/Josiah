@@ -1,5 +1,6 @@
 #include "inference.h"
 #include <math.h>
+#include <immintrin.h>
 
 NNUE* model = NULL;
 
@@ -154,12 +155,41 @@ void updateAccumulator(Position* pos, NNUE* model, int piece, int sq, int isAddi
     int wIdx = (piece * 64) + sq;
     int bIdx = (flipPiece(piece) * 64) + flipSq(sq);
 
+    int16_t* wAcc = pos->nnueAcc.white;
+    int16_t* bAcc = pos->nnueAcc.black;
+    const int16_t* wWeight = &model->featureTransformer->weight[wIdx * ACC_SIZE];
+    const int16_t* bWeight = &model->featureTransformer->weight[bIdx * ACC_SIZE];
+
+    if (isAdding) {
+        for (int i = 0; i < ACC_SIZE; i+=16) {
+            __m256i vwAcc= _mm256_loadu_si256((__m256i*)&wAcc[i]);
+            __m256i vwWeight = _mm256_loadu_si256((__m256i*)&wWeight[i]);
+            _mm256_storeu_si256((__m256i*)&wAcc[i], _mm256_add_epi16(vwAcc, vwWeight));
+
+            __m256i vbAcc= _mm256_loadu_si256((__m256i*)&bAcc[i]);
+            __m256i vbWeight = _mm256_loadu_si256((__m256i*)&bWeight[i]);
+            _mm256_storeu_si256((__m256i*)&bAcc[i], _mm256_add_epi16(vbAcc, vbWeight));
+        }
+    } else {
+        for (int i = 0; i < ACC_SIZE; i+=16) {
+            __m256i vwAcc= _mm256_loadu_si256((__m256i*)&wAcc[i]);
+            __m256i vwWeight = _mm256_loadu_si256((__m256i*)&wWeight[i]);
+            _mm256_storeu_si256((__m256i*)&wAcc[i], _mm256_sub_epi16(vwAcc, vwWeight));
+
+            __m256i vbAcc= _mm256_loadu_si256((__m256i*)&bAcc[i]);
+            __m256i vbWeight = _mm256_loadu_si256((__m256i*)&bWeight[i]);
+            _mm256_storeu_si256((__m256i*)&bAcc[i], _mm256_sub_epi16(vbAcc, vbWeight));
+        }
+    }
+
+    /*
     int sign = isAdding ? 1 : -1;
 
     for (int i = 0; i < ACC_SIZE; i++) {
         pos->nnueAcc.white[i] += sign * model->featureTransformer->weight[wIdx * ACC_SIZE + i];
         pos->nnueAcc.black[i] += sign * model->featureTransformer->weight[bIdx * ACC_SIZE + i];
     }
+    */
 }
 
 
@@ -218,4 +248,3 @@ int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
 
     return (int)roundf(400.0f * logit);
 }
-
