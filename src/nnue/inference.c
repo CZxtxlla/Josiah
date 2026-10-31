@@ -19,7 +19,16 @@ HiddenLayer* loadHiddenLayer(FILE* file) {
     layer->weight = (int8_t*)malloc(wSize * sizeof(int8_t));
     layer->bias = (int32_t*)malloc(bSize * sizeof(uint32_t));
 
-    fread(layer->weight, sizeof(int8_t), wSize, file);
+    // transpose from [in][out] to [out][in]
+    int8_t* tempW = (int8_t*)malloc(wSize);
+    fread(tempW, sizeof(int8_t), wSize, file);
+    for (int j = 0; j < layer->inFeatures; j++) {
+        for (int i = 0; i < layer->outFeatures; i++) {
+            layer->weight[i * layer->inFeatures + j] = tempW[j * layer->outFeatures + i];
+        }
+    }
+
+
     fread(layer->bias, sizeof(int32_t), bSize, file);
 
     return layer;
@@ -196,8 +205,8 @@ void updateAccumulator(Position* pos, NNUE* model, int piece, int sq, int isAddi
 // evaluation
 
 int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
-    uint8_t currentInput[ACC_SIZE * 2];
-    uint8_t nextInput[ACC_SIZE * 2];
+    alignas(32) uint8_t currentInput[ACC_SIZE * 2];
+    alignas(32) uint8_t nextInput[ACC_SIZE * 2];
 
     const int16_t* stmAcc = (pos->stm == WHITE) ? pos->nnueAcc.white : pos->nnueAcc.black;
     const int16_t* nstmAcc = (pos->stm == WHITE) ? pos->nnueAcc.black : pos->nnueAcc.white;
@@ -214,17 +223,32 @@ int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
 
     for (int l = 0; l < model->numHidden; l++) {
         HiddenLayer* hl = model->hiddenLayers[l];
-
         int32_t sums[256];
-        for (int i = 0; i < hl->outFeatures; i++) {
-            sums[i] = hl->bias[i];
-        }
-        for (int j = 0; j < hl->inFeatures; j++) {
-            int32_t inVal = (int32_t)currentInput[j];
 
-            for (int i = 0; i < hl->outFeatures; i++) {
-                sums[i] += inVal * hl->weight[(j * hl->outFeatures) + i];
+        __m256i ones = _mm256_set1_epi16(1);
+
+        for (int i = 0; i < hl->outFeatures; i++) {
+            __m256i sum32 = _mm256_setzero_si256();
+
+            for (int j = 0; j < hl->inFeatures; j += 32) {
+                __m256i in = _mm256_loadu_si256((__m256i*)&currentInput[j]);
+                __m256i weight = _mm256_loadu_si256((__m256i*)&hl->weight[i * hl->inFeatures + j]);
+
+                __m256i res16 = _mm256_maddubs_epi16(in, weight);
+
+                __m256i res32 = _mm256_madd_epi16(res16, ones);
+
+                sum32 = _mm256_add_epi32(sum32, res32);
             }
+
+            __m128i vlow = _mm256_castsi256_si128(sum32);
+            __m128i vhigh = _mm256_extracti128_si256(sum32, 1);
+            __m128i sum128 = _mm_add_epi32(vlow, vhigh);
+            
+            sum128 = _mm_add_epi32(sum128, _mm_shuffle_epi32(sum128, _MM_SHUFFLE(1, 0, 3, 2)));
+            sum128 = _mm_add_epi32(sum128, _mm_shuffle_epi32(sum128, _MM_SHUFFLE(2, 3, 0, 1)));
+            
+            sums[i] = hl->bias[i] + _mm_cvtsi128_si32(sum128);
         }
 
         for (int i = 0; i < hl->outFeatures; i++) {

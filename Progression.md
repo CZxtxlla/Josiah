@@ -264,12 +264,18 @@ Elo difference: 40.17 +/- 19.90, LOS: 100.00 %, DrawRatio: 29.50 %
 SPRT: llr 2.95 (100.0%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
-Version 0.3.0 plans adds nnue evaluation, using the nnue trained on my previous engine. Here is the result of sprt with version 0.2.7:
+Version 0.3.0 adds nnue evaluation, using the nnue trained on my previous engine. Here is the result of sprt with version 0.2.7:
 
 Score of Josiah v0.3.0 vs Josiah v0.2.7: 393 - 287 - 112  [0.567] 792
 Elo difference: 46.78 +/- 22.62, LOS: 100.00 %, DrawRatio: 14.14 %
 SPRT: llr 2.96 (100.7%), lbound -2.94, ubound 2.94 - H1 was accepted
 
+
+Version 0.3.1 adds simd to the nnue evaluation for a drastic speedup. Here is the result of sprt with version 0.3.0:
+
+Score of Josiah v0.3.1 vs Josiah v0.3.0: 107 - 12 - 25  [0.830] 144
+Elo difference: 275.28 +/- 64.51, LOS: 100.00 %, DrawRatio: 17.36 %
+SPRT: llr 2.95 (100.2%), lbound -2.94, ubound 2.94 - H1 was accepted
 
 
 ### Future Improvements
@@ -281,8 +287,7 @@ These are just some performance enhancements that I noticed in other engines tha
 - Persistant history table across the whole game
 - SPSA pruning parameters tuning
 - Hook my own movegen up to Fathom endgame probing
-- Better NNUE
-- SIMD NNUE evaluation
+- Better NNUE / Datagen pipeline
 - Lazy SMP
 
 
