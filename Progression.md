@@ -291,6 +291,9 @@ Score of Josiah v0.3.3 vs Josiah v0.3.2: 753 - 644 - 698  [0.526] 2095
 Elo difference: 18.09 +/- 12.16, LOS: 99.83 %, DrawRatio: 33.32 %
 SPRT: llr 2.97 (101.0%), lbound -2.94, ubound 2.94 - H1 was accepted
 
+
+Version 0.3.3.1 adds no performance, just a fix with the simd.
+
 ### Future Improvements
 
 These are just some performance enhancements that I noticed in other engines that I would like to implement eventually.
