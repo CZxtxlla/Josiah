@@ -190,23 +190,17 @@ void updateAccumulator(Position* pos, NNUE* model, int piece, int sq, int isAddi
             _mm256_storeu_si256((__m256i*)&bAcc[i], _mm256_sub_epi16(vbAcc, vbWeight));
         }
     }
-
-    /*
-    int sign = isAdding ? 1 : -1;
-
-    for (int i = 0; i < ACC_SIZE; i++) {
-        pos->nnueAcc.white[i] += sign * model->featureTransformer->weight[wIdx * ACC_SIZE + i];
-        pos->nnueAcc.black[i] += sign * model->featureTransformer->weight[bIdx * ACC_SIZE + i];
-    }
-    */
 }
 
 
 // evaluation
 
 int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
-    alignas(32) uint8_t currentInput[ACC_SIZE * 2];
-    alignas(32) uint8_t nextInput[ACC_SIZE * 2];
+    alignas(32) uint8_t currentBuffer[ACC_SIZE * 2];
+    alignas(32) uint8_t nextBuffer[ACC_SIZE * 2];
+
+    uint8_t* inPtr = currentBuffer;
+    uint8_t* outPtr = nextBuffer;
 
     const int16_t* stmAcc = (pos->stm == WHITE) ? pos->nnueAcc.white : pos->nnueAcc.black;
     const int16_t* nstmAcc = (pos->stm == WHITE) ? pos->nnueAcc.black : pos->nnueAcc.white;
@@ -225,8 +219,8 @@ int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
         __m128i stm_packed = _mm_packus_epi16(stm_low, stm_high);
         __m128i nstm_packed = _mm_packus_epi16(nstm_low, nstm_high);
 
-        _mm_store_si128((__m128i*)&currentInput[i], stm_packed);
-        _mm_store_si128((__m128i*)&currentInput[ACC_SIZE + i], nstm_packed);
+        _mm_store_si128((__m128i*)&inPtr[i], stm_packed);
+        _mm_store_si128((__m128i*)&inPtr[ACC_SIZE + i], nstm_packed);
     }
 
     // hidden layers
@@ -239,12 +233,15 @@ int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
 
         __m256i ones = _mm256_set1_epi16(1);
 
-        for (int i = 0; i < hl->outFeatures; i+=2) {
+        for (int i = 0; i < hl->outFeatures; i+=4) {
             __m256i sum32_0 = _mm256_setzero_si256();
             __m256i sum32_1 = _mm256_setzero_si256();
+            __m256i sum32_2 = _mm256_setzero_si256();
+            __m256i sum32_3 = _mm256_setzero_si256();
+
 
             for (int j = 0; j < hl->inFeatures; j += 32) {
-                __m256i in = _mm256_loadu_si256((__m256i*)&currentInput[j]);
+                __m256i in = _mm256_loadu_si256((__m256i*)&inPtr[j]);
                 
                 __m256i weight_0 = _mm256_loadu_si256((__m256i*)&hl->weight[i * hl->inFeatures + j]);
                 __m256i res16_0 = _mm256_maddubs_epi16(in, weight_0);
@@ -255,6 +252,16 @@ int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
                 __m256i res16_1 = _mm256_maddubs_epi16(in, weight_1);
                 __m256i res32_1 = _mm256_madd_epi16(res16_1, ones);
                 sum32_1 = _mm256_add_epi32(sum32_1, res32_1);
+
+                __m256i weight_2 = _mm256_loadu_si256((__m256i*)&hl->weight[(i + 2) * hl->inFeatures + j]);
+                __m256i res16_2 = _mm256_maddubs_epi16(in, weight_2);
+                __m256i res32_2 = _mm256_madd_epi16(res16_2, ones);
+                sum32_2 = _mm256_add_epi32(sum32_2, res32_2);
+
+                __m256i weight_3 = _mm256_loadu_si256((__m256i*)&hl->weight[(i + 3) * hl->inFeatures + j]);
+                __m256i res16_3 = _mm256_maddubs_epi16(in, weight_3);
+                __m256i res32_3 = _mm256_madd_epi16(res16_3, ones);
+                sum32_3 = _mm256_add_epi32(sum32_3, res32_3);
             }
 
             __m128i vlow_0 = _mm256_castsi256_si128(sum32_0);
@@ -270,6 +277,20 @@ int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
             sum128_1 = _mm_add_epi32(sum128_1, _mm_shuffle_epi32(sum128_1, _MM_SHUFFLE(1, 0, 3, 2)));
             sum128_1 = _mm_add_epi32(sum128_1, _mm_shuffle_epi32(sum128_1, _MM_SHUFFLE(2, 3, 0, 1)));
             sums[i + 1] = hl->bias[i + 1] + _mm_cvtsi128_si32(sum128_1);
+
+            __m128i vlow_2 = _mm256_castsi256_si128(sum32_2);
+            __m128i vhigh_2 = _mm256_extracti128_si256(sum32_2, 1);
+            __m128i sum128_2 = _mm_add_epi32(vlow_2, vhigh_2);
+            sum128_2 = _mm_add_epi32(sum128_2, _mm_shuffle_epi32(sum128_2, _MM_SHUFFLE(1, 0, 3, 2)));
+            sum128_2 = _mm_add_epi32(sum128_2, _mm_shuffle_epi32(sum128_2, _MM_SHUFFLE(2, 3, 0, 1)));
+            sums[i + 2] = hl->bias[i + 2] + _mm_cvtsi128_si32(sum128_2);
+
+            __m128i vlow_3 = _mm256_castsi256_si128(sum32_3);
+            __m128i vhigh_3 = _mm256_extracti128_si256(sum32_3, 1);
+            __m128i sum128_3 = _mm_add_epi32(vlow_3, vhigh_3);
+            sum128_3 = _mm_add_epi32(sum128_3, _mm_shuffle_epi32(sum128_3, _MM_SHUFFLE(1, 0, 3, 2)));
+            sum128_3 = _mm_add_epi32(sum128_3, _mm_shuffle_epi32(sum128_3, _MM_SHUFFLE(2, 3, 0, 1)));
+            sums[i + 3] = hl->bias[i + 3] + _mm_cvtsi128_si32(sum128_3);
         }
 
         if (l < model->numHidden - 1) {
@@ -290,13 +311,11 @@ int evaluateNNUEQuantized(const Position* pos, NNUE* model) {
 
                 __m128i packed = _mm_packus_epi16(p0, p1);
 
-                _mm_store_si128((__m128i*)&nextInput[i], packed);
+                _mm_store_si128((__m128i*)&outPtr[i], packed);
             }
-
-            for (int i = 0; i < hl->outFeatures; i+=16) {
-                __m128i copy_vec = _mm_load_si128((__m128i*)&nextInput[i]);
-                _mm_store_si128((__m128i*)&currentInput[i], copy_vec);
-            }
+            uint8_t* temp = inPtr;
+            inPtr = outPtr;
+            outPtr = temp;
         } else {
             finalLogit = sums[0];
         }

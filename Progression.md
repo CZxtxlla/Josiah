@@ -284,6 +284,13 @@ Score of Josiah v0.3.2 vs Josiah v0.3.1: 530 - 428 - 436  [0.537] 1394
 Elo difference: 25.47 +/- 15.15, LOS: 99.95 %, DrawRatio: 31.28 %
 SPRT: llr 2.96 (100.7%), lbound -2.94, ubound 2.94 - H1 was accepted
 
+
+Version 0.3.3 adds more simd optimizations by further unrolling loop and removing copy for pointer swap. Here is the result of sprt with version 0.3.2:
+
+Score of Josiah v0.3.3 vs Josiah v0.3.2: 753 - 644 - 698  [0.526] 2095
+Elo difference: 18.09 +/- 12.16, LOS: 99.83 %, DrawRatio: 33.32 %
+SPRT: llr 2.97 (101.0%), lbound -2.94, ubound 2.94 - H1 was accepted
+
 ### Future Improvements
 
 These are just some performance enhancements that I noticed in other engines that I would like to implement eventually.
